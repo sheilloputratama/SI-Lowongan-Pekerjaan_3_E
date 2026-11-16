@@ -1,0 +1,57 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+  BackgroundColor #d5e8d4
+  BorderColor #82b366
+}
+skinparam actor {
+  BorderColor #444444
+}
+
+actor "Pencari Kerja" as PK
+actor "Perusahaan" as PR
+actor "Gemini API" as AI <<sistem eksternal>>
+
+rectangle "Sistem Lowongan Kerja Berbasis Web dengan AI" {
+  usecase "Registrasi & Login" as UC01 #f5f5f5
+
+  usecase "Kelola Profil" as UC02
+  usecase "Unggah & Kelola CV" as UC03
+  usecase "Cari & Filter Lowongan" as UC04
+  usecase "Lamar Pekerjaan" as UC05
+  usecase "Lacak Status Lamaran" as UC06
+  usecase "Lihat Skor Kecocokan" as UC07 #e1d5e7
+  usecase "Lihat Rekomendasi Lowongan" as UC08 #e1d5e7
+  usecase "Pindai Poster Lowongan" as UC09 #e1d5e7
+  usecase "Konfirmasi Hasil Pindai" as UC10
+
+  usecase "Kelola Profil Perusahaan" as UC11
+  usecase "Pasang & Kelola Lowongan" as UC12
+  usecase "Lihat Pelamar Berdasarkan Skor" as UC13
+  usecase "Ubah Status Lamaran" as UC14
+}
+
+PK --> UC01
+PR --> UC01
+
+PK --> UC02
+PK --> UC03
+PK --> UC04
+PK --> UC05
+PK --> UC06
+PK --> UC07
+PK --> UC08
+PK --> UC09
+
+PR --> UC11
+PR --> UC12
+PR --> UC13
+PR --> UC14
+
+UC09 .> UC10 : <<include>>
+
+UC07 -- AI
+UC08 -- AI
+UC09 -- AI
+@enduml
