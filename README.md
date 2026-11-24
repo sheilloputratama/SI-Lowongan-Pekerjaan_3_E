@@ -45,14 +45,24 @@ Semua JSON memakai *snake_case* sesuai kolom ERD. Kolom `matched_skills` / `miss
 
 Batas file (cek di front end, backend sebaiknya sama): CV (PDF/DOCX) maks 2 MB, poster (JPG/PNG/WEBP) maks 2 MB.
 
+## UI/UX & Desain Figma
+
+- **Desain UI/UX** dikerjakan secara kolaboratif di **Figma** dengan file: https://www.figma.com/design/mJMwt3PbMuUrjygS9WEo4e/Untitled  
+- Menggunakan design system berbasis **token warna**, **typography**, **spacing**, dan **elevations** yang diekspor ke Tailwind CSS lewat plugin *Figma‑to‑Tailwind*.  
+- **Komponen utama yang ada di proyek:** `src/components/Navbar.jsx`, `src/components/JobFields.jsx` (card lowongan), `src/components/ProfileForm.jsx`, serta komponen UI umum di `src/components/ui.jsx` (modal konfirmasi, alert, pagination, avatar, dll).  
+- Semua elemen UI bersifat **responsive** (mobile‑first). Breakpoint yang dipakai: `sm` (640px), `md` (768px), `lg` (1024px).  
+- Ikon dan ilustrasi disimpan sebagai **SVG** di Figma dan di‑ekspor ke folder `src/assets` untuk dipakai di React.  
+- Proses **handover**: style guide (warna, ukuran font, radius) disinkronkan otomatis ke `tailwind.config.js` sehingga kode tetap konsisten dengan desain.  
+- Setiap perubahan desain di Figma di‑update ke kode dengan plugin **Code Connect** (jika diperlukan) untuk memastikan teks dan properti tetap sinkron.
+
 ## Hal yang perlu disepakati dengan AB (ERD vs kebutuhan UI)
 
-1. **Nama perusahaan untuk SI Lowongan Kerja eksternal dan poster.** `jobs` hanya punya `company_id`, padahal eksternal/poster tidak punya perusahaan terdaftar. Usul: tambahkan `jobs.company_name`, atau API mengisinya dari `poster_scans.extracted_data`.
-2. **Nilai `users.role`.** Front end memakai `seeker` dan `company`.
-3. **CV mana yang dipakai pencocokan.** ERD tidak punya penanda CV aktif, sehingga front end memakai CV dengan `uploaded_at` terbaru.
-4. **Nama file CV.** `cvs` hanya punya `file_path`; API perlu mengirim `file_name` (bisa diambil dari path).
-5. **SI Lowongan Kerja poster** tidak muncul di pencarian umum, hanya di halaman Scan Poster milik pemindainya. Ubah bila maunya publik.
-6. **Kolom yang tidak ada di ERD dan sengaja dihapus dari UI:** gaji, level, batas lamaran, catatan lamaran, riwayat status, keahlian di profil, kota/website perusahaan.
+1. **Nama perusahaan untuk SI Lowongan Kerja eksternal dan poster.** `jobs` hanya punya `company_id`, padahal eksternal/poster tidak punya perusahaan terdaftar. Usul: tambahkan `jobs.company_name`, atau API mengisinya dari `poster_scans.extracted_data`.  
+2. **Nilai `users.role`.** Front end memakai `seeker` dan `company`.  
+3. **CV mana yang dipakai pencocokan.** ERD tidak punya penanda CV aktif, sehingga front end memakai CV dengan `uploaded_at` terbaru.  
+4. **Nama file CV.** `cvs` hanya punya `file_path`; API perlu mengirim `file_name` (bisa diambil dari path).  
+5. **SI Lowongan Kerja poster** tidak muncul di pencarian umum, hanya di halaman Scan Poster milik pemindainya. Ubah bila maunya publik.  
+6. **Kolom yang tidak ada di ERD dan sengaja dihapus dari UI:** gaji, level, batas lamaran, catatan lamaran, riwayat status, keahlian di profil, kota/website perusahaan.  
 7. **Tabel `match_results`** dibaca lewat objek `match` di detail SI Lowongan Kerja dan daftar pelamar. Siapa yang mengisinya (saat upload CV, saat melamar, atau saat dibuka) perlu diputuskan backend.
 
 ## Pemetaan ke kartu Trello (bagian DK)
