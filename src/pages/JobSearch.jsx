@@ -35,7 +35,7 @@ export default function JobSearch() {
 
   return (
     <div>
-      <PageTitle title="Cari Lowongan" subtitle="Temukan pekerjaan yang sesuai dengan keahlianmu." />
+      <PageTitle title="Cari SI Lowongan Kerja" subtitle="Temukan pekerjaan yang sesuai dengan keahlianmu." />
 
       <Card className="mb-6">
         <div className="grid gap-3 md:grid-cols-4">
@@ -64,14 +64,14 @@ export default function JobSearch() {
       </Card>
 
       <Alert>{error}</Alert>
-      {!jobs && !error ? <Spinner text="Mencari lowongan..." /> : jobs && jobs.length === 0 ? (
-        <Empty>Tidak ada lowongan yang cocok dengan pencarianmu.</Empty>
+      {!jobs && !error ? <Spinner text="Mencari SI Lowongan Kerja..." /> : jobs && jobs.length === 0 ? (
+        <Empty>Tidak ada SI Lowongan Kerja yang cocok dengan pencarianmu.</Empty>
       ) : jobs && (
         <>
-          <p className="mb-3 text-sm text-slate-500">{jobs.length} lowongan ditemukan</p>
+          <p className="mb-3 text-sm text-slate-500">{jobs.length} SI Lowongan Kerja ditemukan</p>
           {user?.role === "seeker" && !hasScore && (
             <p className="mb-3 rounded-lg bg-indigo-50 p-3 text-sm text-indigo-800">
-              Unggah CV di menu <Link to="/cv" className="font-medium underline">CV</Link> untuk melihat skor kecocokan tiap lowongan.
+              Unggah CV di menu <Link to="/cv" className="font-medium underline">CV</Link> untuk melihat skor kecocokan tiap SI Lowongan Kerja.
             </p>
           )}
           <div className="grid gap-4 md:grid-cols-2">
@@ -87,7 +87,7 @@ export default function JobSearch() {
                   </div>
                   <p className="mt-2 text-xs text-slate-500">{j.location} • {j.job_type} • {j.category}</p>
                   <div className="mt-3"><Tags items={splitReq(j.requirements)} /></div>
-                  {j.source === "external" && <p className="mt-3 text-xs text-amber-700">Lowongan eksternal, dibuka di situs asalnya</p>}
+                  {j.source === "external" && <p className="mt-3 text-xs text-amber-700">SI Lowongan Kerja eksternal, dibuka di situs asalnya</p>}
                 </Card>
               </Link>
             ))}
@@ -97,3 +97,6 @@ export default function JobSearch() {
     </div>
   );
 }
+
+
+

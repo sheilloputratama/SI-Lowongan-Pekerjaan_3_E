@@ -59,15 +59,15 @@ export default function JobDetail() {
           <MatchDetail match={job.match} />
           {external ? (
             <>
-              <p className="text-sm text-slate-600">Ini lowongan dari situs lain. Lamaran dilakukan di situs asalnya.</p>
+              <p className="text-sm text-slate-600">Ini SI Lowongan Kerja dari situs lain. Lamaran dilakukan di situs asalnya.</p>
               <a href={job.external_url} target="_blank" rel="noopener noreferrer" className={`${btnPrimary} w-full`}>Buka di situs asal</a>
             </>
           ) : !user ? (
             <p className="text-sm text-slate-600"><Link to="/login" state={{ from: `/jobs/${id}` }} className="font-medium text-indigo-600">Masuk</Link> sebagai pencari kerja untuk melamar.</p>
           ) : user.role === "company" ? (
             <p className="text-sm text-slate-500">Akun perusahaan tidak bisa melamar.</p>
-          ) : job.applied ? <Alert type="success">Kamu sudah melamar lowongan ini.</Alert>
-          : closed ? <Alert>Lowongan ini sudah ditutup.</Alert>
+          ) : job.applied ? <Alert type="success">Kamu sudah melamar SI Lowongan Kerja ini.</Alert>
+          : closed ? <Alert>SI Lowongan Kerja ini sudah ditutup.</Alert>
           : cvs.length === 0 ? <p className="text-sm text-slate-600">Kamu belum punya CV. <Link to="/cv" className="font-medium text-indigo-600">Unggah CV</Link> dulu.</p>
           : (
             <>
@@ -89,3 +89,6 @@ export default function JobDetail() {
     </div>
   );
 }
+
+
+

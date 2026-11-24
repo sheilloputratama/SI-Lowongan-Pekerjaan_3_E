@@ -25,3 +25,5 @@ export function validatePoster(file) {
   return null;
 }
 export const isEmail = (s) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+
+

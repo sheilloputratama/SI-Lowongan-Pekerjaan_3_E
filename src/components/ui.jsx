@@ -137,7 +137,7 @@ export function ConfirmDialog({ open, title, message, confirmText = "Ya", danger
   );
 }
 
-// Hasil pencocokan CV dan lowongan (tabel match_results): skor, keahlian cocok, keahlian kurang, ringkasan.
+// Hasil pencocokan CV dan SI Lowongan Kerja (tabel match_results): skor, keahlian cocok, keahlian kurang, ringkasan.
 export function MatchDetail({ match, label = "Kecocokan dengan CV terbaru" }) {
   if (!match) return null;
   return (
@@ -161,3 +161,6 @@ export function MatchDetail({ match, label = "Kecocokan dengan CV terbaru" }) {
     </div>
   );
 }
+
+
+

@@ -17,7 +17,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
         <Link to="/" className="mr-4 text-lg font-bold text-indigo-700">LowonganAI</Link>
         <nav className="flex flex-1 flex-wrap items-center gap-1">
-          {user?.role !== "company" && <NavLink end to="/" className={link}>Cari Lowongan</NavLink>}
+          {user?.role !== "company" && <NavLink end to="/" className={link}>Cari SI Lowongan Kerja</NavLink>}
           {user?.role === "seeker" && (
             <>
               <NavLink to="/scan" className={link}>Scan Poster</NavLink>
@@ -28,7 +28,7 @@ export default function Navbar() {
           )}
           {user?.role === "company" && (
             <>
-              <NavLink to="/company/jobs" className={link}>Lowongan Saya</NavLink>
+              <NavLink to="/company/jobs" className={link}>SI Lowongan Kerja Saya</NavLink>
               <NavLink to="/company/profile" className={link}>Profil Perusahaan</NavLink>
             </>
           )}
@@ -49,3 +49,6 @@ export default function Navbar() {
     </header>
   );
 }
+
+
+

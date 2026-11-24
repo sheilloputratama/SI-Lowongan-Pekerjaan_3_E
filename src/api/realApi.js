@@ -50,3 +50,5 @@ export const realApi = {
   listScans: () => http("/poster/scans"),
   deleteScan: (id) => http(`/poster/scans/${id}`, { method: "DELETE" }),
 };
+
+

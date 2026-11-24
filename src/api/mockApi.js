@@ -31,8 +31,8 @@ function seed() {
     job("j1", "Front-end Developer", "Yogyakarta", "Penuh waktu", "Teknologi Informasi", "react, javascript, tailwind css, git", "Membangun antarmuka web dengan React.", 2),
     job("j2", "Back-end Developer", "Remote", "Kontrak", "Teknologi Informasi", "node.js, sql, docker", "Mengembangkan REST API dan database.", 5),
     job("j3", "Magang Quality Assurance", "Sleman", "Magang", "Teknologi Informasi", "testing, sql", "Menguji aplikasi web dan mobile.", 8),
-    job("j4", "Customer Service", "Jakarta", "Penuh waktu", "Administrasi", "komunikasi, microsoft excel", "Lowongan dari situs mitra.", 3,
-      { company_id: null, company_name: "PT Contoh Eksternal", source: "external", external_url: "https://example.com/lowongan/123", contact_info: "" }),
+    job("j4", "Customer Service", "Jakarta", "Penuh waktu", "Administrasi", "komunikasi, microsoft excel", "SI Lowongan Kerja dari situs mitra.", 3,
+      { company_id: null, company_name: "PT Contoh Eksternal", source: "external", external_url: "https://example.com/SI Lowongan Kerja/123", contact_info: "" }),
   ];
   const cv = (id, user_id, file_name, file_type, text) => ({ id, user_id, file_name, file_type, extracted_text: text, uploaded_at: now - day * 3 });
   const cvs = [
@@ -68,7 +68,7 @@ const sortBy = (arr, f) => [...arr].sort((a, b) => f(b) - f(a));
 // CV terbaru dipakai untuk pencocokan (ERD tidak punya penanda CV aktif).
 const latestCv = (d, userId) => sortBy(d.cvs.filter((c) => c.user_id === userId), (c) => c.uploaded_at)[0] || null;
 
-// Setara tabel match_results: cocokkan extracted_text CV dengan requirements lowongan.
+// Setara tabel match_results: cocokkan extracted_text CV dengan requirements SI Lowongan Kerja.
 function matchResult(cv, job) {
   const reqs = splitReq(job.requirements);
   if (!cv || !reqs.length) return null;
@@ -126,7 +126,7 @@ export const mockApi = {
     d.cvs = d.cvs.filter((c) => !(c.id === id && c.user_id === u.id)); save(d);
   },
 
-  // ---- Lowongan (pencari kerja) ----
+  // ---- SI Lowongan Kerja (pencari kerja) ----
   async searchJobs({ q = "", location = "", job_type = "", category = "", sort_by = "terbaru" } = {}) {
     await delay(); const d = load(); const u = optionalUser(d);
     const cv = u?.role === "seeker" ? latestCv(d, u.id) : null;
@@ -141,20 +141,20 @@ export const mockApi = {
   },
   async getJob(id) {
     await delay(150); const d = load();
-    const j = d.jobs.find((x) => x.id === id); if (!j) throw new Error("Lowongan tidak ditemukan");
+    const j = d.jobs.find((x) => x.id === id); if (!j) throw new Error("SI Lowongan Kerja tidak ditemukan");
     const u = optionalUser(d); const seeker = u?.role === "seeker" ? u : null;
     const match = seeker ? matchResult(latestCv(d, seeker.id), j) : null;
     return { ...j, match, applied: !!seeker && d.applications.some((a) => a.job_id === id && a.user_id === seeker.id) };
   },
 
-  // ---- Lowongan (perusahaan, CRUD) ----
+  // ---- SI Lowongan Kerja (perusahaan, CRUD) ----
   async myJobs() {
     await delay(150); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
     return sortBy(d.jobs.filter((j) => j.company_id === c.id), (j) => j.created_at).map((j) => ({ ...j, applicant_count: d.applications.filter((a) => a.job_id === j.id).length }));
   },
   async getMyJob(id) {
     await delay(100); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
-    const j = d.jobs.find((x) => x.id === id && x.company_id === c.id); if (!j) throw new Error("Lowongan tidak ditemukan");
+    const j = d.jobs.find((x) => x.id === id && x.company_id === c.id); if (!j) throw new Error("SI Lowongan Kerja tidak ditemukan");
     return j;
   },
   async createJob(p) {
@@ -164,7 +164,7 @@ export const mockApi = {
   },
   async updateJob(id, p) {
     await delay(); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
-    const j = d.jobs.find((x) => x.id === id && x.company_id === c.id); if (!j) throw new Error("Lowongan tidak ditemukan");
+    const j = d.jobs.find((x) => x.id === id && x.company_id === c.id); if (!j) throw new Error("SI Lowongan Kerja tidak ditemukan");
     Object.assign(j, p); save(d); return j;
   },
   async deleteJob(id) {
@@ -177,9 +177,9 @@ export const mockApi = {
   async apply(jobId, { cv_id }) {
     await delay(); const d = load(); const u = currentUser(d, "seeker");
     const job = d.jobs.find((j) => j.id === jobId);
-    if (!job) throw new Error("Lowongan tidak ditemukan");
-    if (job.source !== "internal" || job.status !== "aktif") throw new Error("Lowongan ini tidak menerima lamaran");
-    if (d.applications.some((a) => a.job_id === jobId && a.user_id === u.id)) throw new Error("Kamu sudah melamar lowongan ini");
+    if (!job) throw new Error("SI Lowongan Kerja tidak ditemukan");
+    if (job.source !== "internal" || job.status !== "aktif") throw new Error("SI Lowongan Kerja ini tidak menerima lamaran");
+    if (d.applications.some((a) => a.job_id === jobId && a.user_id === u.id)) throw new Error("Kamu sudah melamar SI Lowongan Kerja ini");
     const cv = d.cvs.find((c) => c.id === cv_id && c.user_id === u.id);
     if (!cv) throw new Error("Pilih CV terlebih dahulu");
     d.applications.push({ id: uid(), job_id: jobId, user_id: u.id, cv_id, status: "Dikirim", match_score: matchResult(cv, job)?.score ?? 0, applied_at: Date.now() });
@@ -189,12 +189,12 @@ export const mockApi = {
     await delay(150); const d = load(); const u = currentUser(d, "seeker");
     return sortBy(d.applications.filter((a) => a.user_id === u.id), (a) => a.applied_at).map((a) => {
       const j = d.jobs.find((x) => x.id === a.job_id);
-      return { ...a, job_title: j?.title || "(lowongan dihapus)", company_name: j?.company_name || "-", cv_file_name: d.cvs.find((c) => c.id === a.cv_id)?.file_name || "-" };
+      return { ...a, job_title: j?.title || "(SI Lowongan Kerja dihapus)", company_name: j?.company_name || "-", cv_file_name: d.cvs.find((c) => c.id === a.cv_id)?.file_name || "-" };
     });
   },
   async jobApplicants(jobId) {
     await delay(150); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
-    const job = d.jobs.find((j) => j.id === jobId && j.company_id === c.id); if (!job) throw new Error("Lowongan tidak ditemukan");
+    const job = d.jobs.find((j) => j.id === jobId && j.company_id === c.id); if (!job) throw new Error("SI Lowongan Kerja tidak ditemukan");
     const applicants = d.applications.filter((a) => a.job_id === jobId).map((a) => {
       const s = d.users.find((x) => x.id === a.user_id); const cv = d.cvs.find((x) => x.id === a.cv_id);
       return { ...a, cv_file_name: cv?.file_name || "-", applicant: { full_name: s.full_name, email: s.email, phone: s.phone }, match: matchResult(cv, job) };
@@ -209,7 +209,7 @@ export const mockApi = {
   },
 
   // ---- Pemindaian poster (tabel poster_scans) ----
-  // Langkah 1: scan. Membuat poster_scans berstatus "pending"; belum jadi lowongan.
+  // Langkah 1: scan. Membuat poster_scans berstatus "pending"; belum jadi SI Lowongan Kerja.
   async scanPoster(file) {
     await delay(1600); const d = load(); const u = currentUser(d, "seeker");
     // Mock: hasil contoh. Backend asli mengirim gambar ke Gemini; bentuk balasan sama.
@@ -221,7 +221,7 @@ export const mockApi = {
     d.poster_scans.push(scan); save(d);
     return { scan_id: scan.id, fields, confidence: { title: 0.97, company_name: 0.92, location: 0.9, job_type: 0.85, category: 0.6, contact_info: 0.55, requirements: 0.7 } };
   },
-  // Langkah 2: setelah pengguna memeriksa dan mengonfirmasi, baru dibuat lowongan (jobs.source = "poster").
+  // Langkah 2: setelah pengguna memeriksa dan mengonfirmasi, baru dibuat SI Lowongan Kerja (jobs.source = "poster").
   async confirmScan(scanId, fields) {
     await delay(); const d = load(); const u = currentUser(d, "seeker");
     const scan = d.poster_scans.find((s) => s.id === scanId && s.user_id === u.id && s.status === "pending");
@@ -244,3 +244,6 @@ export const mockApi = {
     d.poster_scans = d.poster_scans.filter((x) => x.id !== id); save(d);
   },
 };
+
+
+

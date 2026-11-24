@@ -1,7 +1,7 @@
 import { Field, inputCls } from "./ui.jsx";
 import { CATEGORIES, JOB_TYPES } from "../utils.js";
 
-// Validasi bersama untuk form lowongan (perusahaan) dan hasil scan poster.
+// Validasi bersama untuk form SI Lowongan Kerja (perusahaan) dan hasil scan poster.
 export function validateJob(f) {
   const e = {};
   if (!f.title?.trim()) e.title = "Posisi wajib diisi";
@@ -12,7 +12,7 @@ export function validateJob(f) {
   return e;
 }
 
-// Kolom form lowongan sesuai tabel jobs. `flag(name)` (opsional) menandai field
+// Kolom form SI Lowongan Kerja sesuai tabel jobs. `flag(name)` (opsional) menandai field
 // dengan keyakinan AI rendah. `extra` = field tambahan (mis. status, perusahaan).
 export default function JobFields({ form, set, errors = {}, flag = () => false, extra }) {
   const mark = (name) => (flag(name) ? " ring-2 ring-amber-300 border-amber-400" : "");
@@ -56,3 +56,6 @@ export default function JobFields({ form, set, errors = {}, flag = () => false, 
     </div>
   );
 }
+
+
+

@@ -11,3 +11,5 @@ const FIELDS = [
 export default function SeekerProfile() {
   return <ProfileForm title="Profil Saya" subtitle="Keahlianmu dibaca otomatis dari CV yang kamu unggah di menu CV." fields={FIELDS} />;
 }
+
+

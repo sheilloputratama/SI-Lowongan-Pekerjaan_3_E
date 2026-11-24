@@ -38,12 +38,12 @@ export default function CompanyJobForm() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle title={editing ? "Edit Lowongan" : "Pasang Lowongan"} />
+      <PageTitle title={editing ? "Edit SI Lowongan Kerja" : "Pasang SI Lowongan Kerja"} />
       <Card>
         <form onSubmit={submit} className="space-y-4" noValidate>
           <JobFields form={form} set={set} errors={errors}
             extra={
-              <Field label="Status lowongan" hint="Lowongan berstatus ditutup tidak tampil di pencarian">
+              <Field label="Status SI Lowongan Kerja" hint="SI Lowongan Kerja berstatus ditutup tidak tampil di pencarian">
                 <select className={inputCls} value={form.status} onChange={(e) => set("status", e.target.value)}>
                   {JOB_STATUSES.map((s) => <option key={s}>{s}</option>)}
                 </select>
@@ -51,7 +51,7 @@ export default function CompanyJobForm() {
             } />
           <Alert>{error}</Alert>
           <div className="flex gap-2">
-            <button className={btnPrimary} disabled={busy}>{busy ? "Menyimpan..." : editing ? "Simpan perubahan" : "Pasang lowongan"}</button>
+            <button className={btnPrimary} disabled={busy}>{busy ? "Menyimpan..." : editing ? "Simpan perubahan" : "Pasang SI Lowongan Kerja"}</button>
             <button type="button" className={btnGhost} onClick={() => navigate("/company/jobs")}>Batal</button>
           </div>
         </form>
@@ -59,3 +59,6 @@ export default function CompanyJobForm() {
     </div>
   );
 }
+
+
+

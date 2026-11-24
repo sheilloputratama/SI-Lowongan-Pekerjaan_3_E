@@ -12,5 +12,8 @@ const FIELDS = [
 ];
 
 export default function CompanyProfile() {
-  return <ProfileForm title="Profil Perusahaan" subtitle="Informasi ini tampil pada lowongan yang kamu pasang." fields={FIELDS} />;
+  return <ProfileForm title="Profil Perusahaan" subtitle="Informasi ini tampil pada SI Lowongan Kerja yang kamu pasang." fields={FIELDS} />;
 }
+
+
+

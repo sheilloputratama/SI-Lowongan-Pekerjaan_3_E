@@ -37,7 +37,7 @@ export default function CvManager() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle title="CV Saya" subtitle="Unggah CV berformat PDF atau DOCX (maks. 2 MB). CV terbaru dipakai untuk menghitung kecocokan dengan lowongan." />
+      <PageTitle title="CV Saya" subtitle="Unggah CV berformat PDF atau DOCX (maks. 2 MB). CV terbaru dipakai untuk menghitung kecocokan dengan SI Lowongan Kerja." />
 
       <div
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
@@ -76,3 +76,6 @@ export default function CvManager() {
     </div>
   );
 }
+
+
+

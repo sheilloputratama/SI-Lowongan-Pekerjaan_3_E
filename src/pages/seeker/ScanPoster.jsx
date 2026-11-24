@@ -66,13 +66,13 @@ export default function ScanPoster() {
     setMsg({ type: "", text: "" }); setConfirm(true);
   };
 
-  // Konfirmasi: poster_scans pending -> confirmed, dan lowongan (jobs, source=poster) baru dibuat di sini.
+  // Konfirmasi: poster_scans pending -> confirmed, dan SI Lowongan Kerja (jobs, source=poster) baru dibuat di sini.
   const save = async () => {
     setSaving(true);
     try {
       await api.confirmScan(result.scan_id, form);
       setConfirm(false); reset(); await loadSaved();
-      setMsg({ type: "success", text: "Lowongan dari poster disimpan dan dicocokkan dengan CV terbaru kamu." });
+      setMsg({ type: "success", text: "SI Lowongan Kerja dari poster disimpan dan dicocokkan dengan CV terbaru kamu." });
     } catch (e) { setConfirm(false); setMsg({ type: "error", text: e.message }); }
     finally { setSaving(false); }
   };
@@ -81,7 +81,7 @@ export default function ScanPoster() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <PageTitle title="Scan Poster Lowongan" subtitle="Foto atau unggah poster, AI membaca isinya, kamu periksa, lalu dicocokkan dengan CV." />
+      <PageTitle title="Scan Poster SI Lowongan Kerja" subtitle="Foto atau unggah poster, AI membaca isinya, kamu periksa, lalu dicocokkan dengan CV." />
 
       <Card className="mb-6">
         <div className="grid gap-5 md:grid-cols-2">
@@ -100,7 +100,7 @@ export default function ScanPoster() {
             )}
           </div>
           <div className="flex min-h-40 items-center justify-center overflow-hidden rounded-lg bg-slate-100">
-            {preview ? <img src={preview} alt="Poster lowongan" className="max-h-72 object-contain" /> : <span className="text-sm text-slate-400">Pratinjau poster</span>}
+            {preview ? <img src={preview} alt="Poster SI Lowongan Kerja" className="max-h-72 object-contain" /> : <span className="text-sm text-slate-400">Pratinjau poster</span>}
           </div>
         </div>
         {scanning && <Spinner text="Mengekstrak posisi, syarat, dan kontak..." />}
@@ -127,15 +127,15 @@ export default function ScanPoster() {
               Saya sudah memeriksa dan data di atas sesuai dengan poster.
             </label>
             <div className="flex gap-2">
-              <button className={btnPrimary} disabled={!checked}>Simpan lowongan</button>
+              <button className={btnPrimary} disabled={!checked}>Simpan SI Lowongan Kerja</button>
               <button type="button" className={btnGhost} onClick={cancel}>Batalkan</button>
             </div>
           </form>
         </Card>
       )}
 
-      <h2 className="mb-3 text-lg font-semibold">Lowongan dari poster</h2>
-      {!saved ? <Spinner /> : saved.length === 0 ? <Empty>Belum ada lowongan yang disimpan dari poster.</Empty> : (
+      <h2 className="mb-3 text-lg font-semibold">SI Lowongan Kerja dari poster</h2>
+      {!saved ? <Spinner /> : saved.length === 0 ? <Empty>Belum ada SI Lowongan Kerja yang disimpan dari poster.</Empty> : (
         <div className="space-y-3">
           {saved.map((s) => (
             <Card key={s.id}>
@@ -161,9 +161,12 @@ export default function ScanPoster() {
         </div>
       )}
 
-      <ConfirmDialog open={confirm} busy={saving} title="Simpan lowongan ini?" confirmText="Ya, simpan"
+      <ConfirmDialog open={confirm} busy={saving} title="Simpan SI Lowongan Kerja ini?" confirmText="Ya, simpan"
         message={`"${form?.title}" akan disimpan ke daftarmu dan dicocokkan dengan CV terbaru.`}
         onConfirm={save} onCancel={() => setConfirm(false)} />
     </div>
   );
 }
+
+
+

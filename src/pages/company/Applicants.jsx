@@ -38,7 +38,7 @@ export default function Applicants() {
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link to="/company/jobs" className="text-sm text-indigo-600">← Lowongan saya</Link>
+      <Link to="/company/jobs" className="text-sm text-indigo-600">← SI Lowongan Kerja saya</Link>
       <PageTitle title={`Pelamar: ${job.title}`} subtitle={`${data.applicants.length} pelamar, diurutkan berdasarkan skor kecocokan CV.`} />
 
       <div className="mb-4 flex flex-wrap gap-3">
@@ -78,7 +78,7 @@ export default function Applicants() {
                   <button className="text-sm text-indigo-600" onClick={() => setOpen({ ...open, [a.id]: !open[a.id] })}>
                     {open[a.id] ? "Sembunyikan detail kecocokan" : "Lihat detail kecocokan"}
                   </button>
-                  {open[a.id] && <div className="mt-3 rounded-lg bg-slate-50 p-3"><MatchDetail match={a.match} label="Kecocokan CV dengan lowongan" /></div>}
+                  {open[a.id] && <div className="mt-3 rounded-lg bg-slate-50 p-3"><MatchDetail match={a.match} label="Kecocokan CV dengan SI Lowongan Kerja" /></div>}
                 </div>
               )}
 
@@ -98,3 +98,6 @@ export default function Applicants() {
     </div>
   );
 }
+
+
+

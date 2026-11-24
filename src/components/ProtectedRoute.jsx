@@ -12,3 +12,5 @@ export default function ProtectedRoute({ role, children }) {
   if (role && user.role !== role) return <Navigate to={homePath(user)} replace />;
   return children;
 }
+
+

@@ -15,17 +15,17 @@ export default function CompanyJobs() {
 
   const remove = async () => {
     setDeleting(true);
-    try { await api.deleteJob(toDelete.id); setMsg({ type: "success", text: "Lowongan dihapus" }); await load(); }
+    try { await api.deleteJob(toDelete.id); setMsg({ type: "success", text: "SI Lowongan Kerja dihapus" }); await load(); }
     catch (e) { setMsg({ type: "error", text: e.message }); }
     finally { setDeleting(false); setToDelete(null); }
   };
 
   return (
     <div className="mx-auto max-w-4xl">
-      <PageTitle title="Lowongan Saya" subtitle="Pasang dan kelola lowongan perusahaanmu."
-        action={<Link to="/company/jobs/new" className={btnPrimary}>+ Pasang lowongan</Link>} />
+      <PageTitle title="SI Lowongan Kerja Saya" subtitle="Pasang dan kelola SI Lowongan Kerja perusahaanmu."
+        action={<Link to="/company/jobs/new" className={btnPrimary}>+ Pasang SI Lowongan Kerja</Link>} />
       <div className="mb-4"><Alert type={msg.type}>{msg.text}</Alert></div>
-      {!jobs ? <Spinner /> : jobs.length === 0 ? <Empty>Belum ada lowongan. Pasang lowongan pertamamu.</Empty> : (
+      {!jobs ? <Spinner /> : jobs.length === 0 ? <Empty>Belum ada SI Lowongan Kerja. Pasang SI Lowongan Kerja pertamamu.</Empty> : (
         <div className="space-y-4">
           {jobs.map((j) => (
             <Card key={j.id}>
@@ -48,9 +48,12 @@ export default function CompanyJobs() {
           ))}
         </div>
       )}
-      <ConfirmDialog open={!!toDelete} danger busy={deleting} title="Hapus lowongan?" confirmText="Hapus"
+      <ConfirmDialog open={!!toDelete} danger busy={deleting} title="Hapus SI Lowongan Kerja?" confirmText="Hapus"
         message={`"${toDelete?.title}" beserta ${toDelete?.applicant_count ?? 0} lamaran di dalamnya akan dihapus permanen.`}
         onConfirm={remove} onCancel={() => setToDelete(null)} />
     </div>
   );
 }
+
+
+

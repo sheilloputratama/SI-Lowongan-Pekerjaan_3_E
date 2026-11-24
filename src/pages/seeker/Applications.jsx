@@ -39,7 +39,7 @@ export default function Applications() {
       <PageTitle title="Lamaran Saya" subtitle="Pantau status setiap lamaran yang sudah kamu kirim." />
       <Alert>{error}</Alert>
       {!apps && !error ? <Spinner /> : apps && apps.length === 0 ? (
-        <Empty>Belum ada lamaran. <Link to="/" className="text-indigo-600">Cari lowongan</Link></Empty>
+        <Empty>Belum ada lamaran. <Link to="/" className="text-indigo-600">Cari SI Lowongan Kerja</Link></Empty>
       ) : apps && (
         <div className="space-y-4">
           {apps.map((a) => (
@@ -63,3 +63,6 @@ export default function Applications() {
     </div>
   );
 }
+
+
+
