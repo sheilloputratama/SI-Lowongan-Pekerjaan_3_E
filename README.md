@@ -1,35 +1,34 @@
-# LowonganAI: Front End
+# SI Lowongan Kerja: Front End
 
-Front end Sistem SI Lowongan Kerja AI Berbasis Web dengan AI (Kelompok 3, TI UMY).
-Stack: React 18 + Vite + Tailwind CSS 4 + React Router. Data dan nama field mengikuti ERD kelompok
-(users, companies, jobs, cvs, applications, match_results, poster_scans), memakai snake_case.
+Front end Sistem **SI Lowongan Kerja** berbasis web menggunakan React 18, Vite, Tailwind CSS, dan React Router. Data dan nama field mengikuti ERD kelompok (users, companies, jobs, cvs, applications, match_results, poster_scans) dengan konvensi *snake_case*.
 
 ## Menjalankan
 
 ```powershell
 npm install
 npm run dev        # http://localhost:5173
-npm run build      # hasil di dist/
+npm run build      # hasil di folder dist/
 ```
 
-Default berjalan di **mode mock** (data di localStorage). Akun demo (password `password123`):
-`pelamar@test.test` (pencari kerja), `hrd@nusantara.test` (perusahaan).
-Reset data demo: hapus key `lk_db_v2` di localStorage (DevTools > Application).
+Aplikasi berjalan dalam **mode mock** (data disimpan di `localStorage`). Akun demo (password `password123`):
+- `pelamar@test.test` (pencari kerja)
+- `hrd@nusantara.test` (perusahaan)
+
+Reset data demo: hapus key `lk_db_v2` di `localStorage` (DevTools → Application).
 
 ## Pindah ke backend asli
 
-1. Salin `.env.example` ke `.env`, isi `VITE_API_URL=http://localhost:8000/api`
-2. Backend (AB) mengikuti kontrak di bawah. Bila path beda, ubah `src/api/realApi.js` saja.
+1. Salin `.env.example` ke `.env`, isi `VITE_API_URL=http://localhost:8000/api`.
+2. Backend (AB) mengikuti kontrak di bawah. Jika path berbeda, ubah `src/api/realApi.js`.
 
-Semua JSON memakai snake_case sesuai kolom ERD. Kolom `matched_skills` / `missing_skills` bertipe text di DB,
-tapi di API dikirim sebagai **array string**. `jobs.requirements` tetap **text** (dipisah koma / baris baru).
+Semua JSON memakai *snake_case* sesuai kolom ERD. Kolom `matched_skills` / `missing_skills` bertipe *text* di DB, namun di API dikirim sebagai **array string**. `jobs.requirements` tetap **text** (dipisah koma / baris baru).
 
 | Fungsi | Method & path | Body / balasan |
 |---|---|---|
 | register | `POST /auth/register` | seeker: `{role, full_name, phone, email, password}`; company: + `company_name, industry, address` |
 | login | `POST /auth/login` | balas `{ token, user }` |
 | me | `GET /auth/me` | `{ id, role, email, full_name, phone, company: {id, name, ...} \| null }` |
-| profil | `GET/PUT /profile` | seeker: `{full_name, phone, email}`; company: + `company_name, industry, address, description` (companies.name dikirim sebagai `company_name`) |
+| profil | `GET/PUT /profile` | seeker: `{full_name, phone, email}`; company: + `company_name, industry, address, description` |
 | CV | `GET/POST /cvs` (multipart `file`), `DELETE /cvs/:id` | item: `{id, file_name, file_type, uploaded_at}`; terbaru dulu; CV terbaru dipakai untuk pencocokan |
 | cari SI Lowongan Kerja | `GET /jobs?q&location&job_type&category&sort_by` | item jobs + `company_name`, `match_score` (null bila belum punya CV); `sort_by=skor` untuk kecocokan tertinggi |
 | detail SI Lowongan Kerja | `GET /jobs/:id` | jobs + `company_name`, `applied`, `match: {score, matched_skills[], missing_skills[], summary} \| null` |
@@ -42,16 +41,15 @@ tapi di API dikirim sebagai **array string**. `jobs.requirements` tetap **text**
 | konfirmasi scan | `POST /poster/scans/:id/confirm` | body = fields yang sudah diperiksa user; buat `jobs` (`source=poster`), isi `poster_scans.job_id`, status `confirmed`, hitung `match_results` |
 | daftar / hapus scan | `GET /poster/scans`, `DELETE /poster/scans/:id` | item: `{id, status, scanned_at, job, match, match_score}`; hapus scan juga hapus job-nya |
 
-`fields` hasil scan: title, company_name, location, job_type, category, contact_info, description, requirements (text).
-`confidence`: angka 0..1 per field; di bawah 0.75 ditandai kuning di UI.
+`fields` hasil scan: title, company_name, location, job_type, category, contact_info, description, requirements (text). `confidence`: angka 0..1 per field; di bawah 0.75 ditandai kuning di UI.
 
-Batas file (cek di front end, backend sebaiknya sama): CV (PDF/DOCX) maks 2 MB, poster (JPG/PNG/WEBP) maks 2 MB.
+Batas file (cek di front end, backend sebaiknya sama): CV (PDF/DOCX) maks 2 MB, poster (JPG/PNG/WEBP) maks 2 MB.
 
 ## Hal yang perlu disepakati dengan AB (ERD vs kebutuhan UI)
 
-1. **Nama perusahaan untuk SI Lowongan Kerja eksternal dan poster.** `jobs` hanya punya `company_id`, padahal SI Lowongan Kerja eksternal/poster tidak punya perusahaan terdaftar. Usul: tambah `jobs.company_name`, atau API mengisinya dari `poster_scans.extracted_data`.
+1. **Nama perusahaan untuk SI Lowongan Kerja eksternal dan poster.** `jobs` hanya punya `company_id`, padahal eksternal/poster tidak punya perusahaan terdaftar. Usul: tambahkan `jobs.company_name`, atau API mengisinya dari `poster_scans.extracted_data`.
 2. **Nilai `users.role`.** Front end memakai `seeker` dan `company`.
-3. **CV mana yang dipakai pencocokan.** ERD tidak punya penanda CV aktif, jadi front end memakai CV dengan `uploaded_at` terbaru.
+3. **CV mana yang dipakai pencocokan.** ERD tidak punya penanda CV aktif, sehingga front end memakai CV dengan `uploaded_at` terbaru.
 4. **Nama file CV.** `cvs` hanya punya `file_path`; API perlu mengirim `file_name` (bisa diambil dari path).
 5. **SI Lowongan Kerja poster** tidak muncul di pencarian umum, hanya di halaman Scan Poster milik pemindainya. Ubah bila maunya publik.
 6. **Kolom yang tidak ada di ERD dan sengaja dihapus dari UI:** gaji, level, batas lamaran, catatan lamaran, riwayat status, keahlian di profil, kota/website perusahaan.
@@ -74,7 +72,4 @@ Batas file (cek di front end, backend sebaiknya sama): CV (PDF/DOCX) maks 2 MB, 
 | Pemindaian poster SI Lowongan Kerja | `pages/seeker/ScanPoster.jsx` |
 | Konfirmasi pengguna sebelum simpan | `pages/seeker/ScanPoster.jsx` (cek ulang + centang + dialog), `components/ui.jsx` (`ConfirmDialog`) |
 
-Sesuai PPT: tidak ada peran admin, bukan aplikasi native, SI Lowongan Kerja eksternal tidak di-scrape (hanya diarahkan ke situs asal).
-
-
-
+Sesuaikan dengan PPT: tidak ada peran admin, bukan aplikasi native, SI Lowongan Kerja eksternal tidak di‑scrape (hanya diarahkan ke situs asal).
