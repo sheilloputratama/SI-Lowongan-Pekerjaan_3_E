@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../api/client.js";
 import { Alert, Card, ConfirmDialog, Empty, PageTitle, Spinner, btnGhost, btnPrimary } from "../../components/ui.jsx";
-import { fmtDate, fmtSize, validateCv } from "../../utils.js";
+import { fmtDate, validateCv } from "../../utils.js";
 
 export default function CvManager() {
   const [cvs, setCvs] = useState(null);
@@ -28,10 +28,6 @@ export default function CvManager() {
     finally { setUploading(false); if (inputRef.current) inputRef.current.value = ""; }
   };
 
-  const makeActive = async (id) => {
-    try { await api.setActiveCv(id); await load(); } catch (e) { setMsg({ type: "error", text: e.message }); }
-  };
-
   const confirmDelete = async () => {
     setDeleting(true);
     try { await api.deleteCv(toDelete.id); setMsg({ type: "success", text: "CV dihapus" }); await load(); }
@@ -41,7 +37,7 @@ export default function CvManager() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <PageTitle title="CV Saya" subtitle="Unggah CV berformat PDF atau DOCX (maks. 5 MB). CV aktif dipakai untuk menghitung kecocokan." />
+      <PageTitle title="CV Saya" subtitle="Unggah CV berformat PDF atau DOCX (maks. 2 MB). CV terbaru dipakai untuk menghitung kecocokan dengan lowongan." />
 
       <div
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
@@ -52,7 +48,7 @@ export default function CvManager() {
         <p className="text-sm text-slate-600">Tarik file CV ke sini, atau</p>
         <input ref={inputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={(e) => upload(e.target.files[0])} />
         <button className={`${btnPrimary} mt-3`} disabled={uploading} onClick={() => inputRef.current.click()}>
-          {uploading ? "Mengunggah..." : "Pilih file"}
+          {uploading ? "Mengunggah dan membaca CV..." : "Pilih file"}
         </button>
       </div>
 
@@ -60,16 +56,14 @@ export default function CvManager() {
 
       {!cvs ? <Spinner /> : cvs.length === 0 ? <Empty>Belum ada CV. Unggah CV pertama kamu.</Empty> : (
         <div className="space-y-3">
-          {cvs.map((cv) => (
+          {cvs.map((cv, i) => (
             <Card key={cv.id} className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-medium">{cv.name}</p>
-                <p className="text-xs text-slate-500">{fmtSize(cv.size)} • diunggah {fmtDate(cv.uploadedAt)}</p>
+                <p className="font-medium">{cv.file_name}</p>
+                <p className="text-xs text-slate-500">{cv.file_type.toUpperCase()} • diunggah {fmtDate(cv.uploaded_at)}</p>
               </div>
               <div className="flex items-center gap-2">
-                {cv.active
-                  ? <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">CV aktif</span>
-                  : <button className={btnGhost} onClick={() => makeActive(cv.id)}>Jadikan aktif</button>}
+                {i === 0 && <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Dipakai untuk pencocokan</span>}
                 <button className={`${btnGhost} text-red-600`} onClick={() => setToDelete(cv)}>Hapus</button>
               </div>
             </Card>
@@ -78,7 +72,7 @@ export default function CvManager() {
       )}
 
       <ConfirmDialog open={!!toDelete} danger busy={deleting} title="Hapus CV?" confirmText="Hapus"
-        message={`File "${toDelete?.name}" akan dihapus permanen.`} onConfirm={confirmDelete} onCancel={() => setToDelete(null)} />
+        message={`File "${toDelete?.file_name}" akan dihapus permanen.`} onConfirm={confirmDelete} onCancel={() => setToDelete(null)} />
     </div>
   );
 }

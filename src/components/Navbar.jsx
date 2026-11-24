@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import { USE_MOCK } from "../api/client.js";
 import { btnGhost, btnPrimary } from "./ui.jsx";
+import { displayName } from "../utils.js";
 
 const link = ({ isActive }) =>
   `rounded-md px-3 py-1.5 text-sm ${isActive ? "bg-indigo-50 font-medium text-indigo-700" : "text-slate-600 hover:bg-slate-100"}`;
@@ -35,7 +36,7 @@ export default function Navbar() {
         {USE_MOCK && <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Mode mock</span>}
         {user ? (
           <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-600 sm:inline">{user.name}</span>
+            <span className="hidden text-sm text-slate-600 sm:inline">{displayName(user)}</span>
             <button className={btnGhost} onClick={onLogout}>Keluar</button>
           </div>
         ) : (

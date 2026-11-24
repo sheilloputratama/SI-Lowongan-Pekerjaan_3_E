@@ -1,49 +1,48 @@
-// Mode MOCK: seluruh data disimpan di localStorage supaya front end bisa jalan
-// dan didemokan tanpa backend. Bentuk fungsi & datanya sama dengan realApi.js,
-// jadi saat backend (AB) siap, cukup isi VITE_API_URL.
-// CATATAN: password disimpan polos HANYA di mock. Jangan ditiru di backend asli.
+// Mode MOCK: data disimpan di localStorage supaya front end bisa jalan tanpa backend.
+// Struktur data mengikuti ERD (users, companies, jobs, cvs, applications,
+// match_results, poster_scans) dan nama field memakai snake_case seperti kolom ERD.
+// Bentuk fungsi dan datanya sama dengan realApi.js.
+// CATATAN: password disimpan polos HANYA di mock. extracted_text CV di mock adalah
+// teks contoh; di sistem asli diekstrak dari PDF/DOCX dan dinilai AI (Gemini).
 
-const KEY = "lk_db_v1";
+const KEY = "lk_db_v2";
 const TOKEN = "lk_token";
 const delay = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 const uid = () => crypto.randomUUID();
 const norm = (s) => String(s).toLowerCase().trim();
+const splitReq = (t) => String(t || "").split(/[,;\n]/).map((s) => s.trim()).filter(Boolean);
+const SAMPLE_CV_TEXT = "react javascript node.js sql git html css";
 
 function seed() {
-  const company = {
-    id: "c1", role: "company", email: "hrd@nusantara.test", password: "password123",
-    profile: { companyName: "PT Nusantara Digital Indonesia", industry: "Teknologi Informasi", city: "Yogyakarta", website: "https://nusantara.test", phone: "0274-000000", about: "Perusahaan pengembang perangkat lunak." },
-  };
-  const mkSeeker = (id, email, fullName, skills) => ({
-    id, role: "seeker", email, password: "password123",
-    profile: { fullName, phone: "08123456789", city: "Yogyakarta", headline: "Fresh graduate Teknologi Informasi", education: "S1 Teknologi Informasi, UMY", about: "", skills },
-  });
-  const seekers = [
-    mkSeeker("s1", "pelamar@test.test", "Pelamar Demo", ["react", "javascript", "sql"]),
-    mkSeeker("s2", "rina@test.test", "Rina Pratiwi", ["react", "javascript", "tailwind css", "git"]),
-    mkSeeker("s3", "budi@test.test", "Budi Santoso", ["php", "mysql"]),
-  ];
   const now = Date.now();
-  const jobs = [
-    { id: "j1", companyId: "c1", companyName: company.profile.companyName, title: "Front-end Developer", location: "Yogyakarta", type: "Penuh waktu", level: "Junior", salary: "Rp6.000.000 - Rp8.000.000", deadline: "2026-12-31", description: "Membangun antarmuka web dengan React.", requirements: ["react", "javascript", "tailwind css", "git"], status: "aktif", source: "internal", createdAt: now - 86400000 * 2 },
-    { id: "j2", companyId: "c1", companyName: company.profile.companyName, title: "Back-end Developer", location: "Remote", type: "Kontrak", level: "Menengah", salary: "Negosiasi", deadline: "2026-12-15", description: "Mengembangkan REST API dan database.", requirements: ["node.js", "sql", "docker"], status: "aktif", source: "internal", createdAt: now - 86400000 * 5 },
-    { id: "j3", companyId: "c1", companyName: company.profile.companyName, title: "Magang Quality Assurance", location: "Sleman", type: "Magang", level: "Fresh graduate", salary: "Uang saku", deadline: "2026-11-30", description: "Menguji aplikasi web dan mobile.", requirements: ["testing", "sql"], status: "aktif", source: "internal", createdAt: now - 86400000 * 8 },
+  const day = 86400000;
+  const users = [
+    { id: "u1", role: "company", email: "hrd@nusantara.test", password: "password123", full_name: "Rina HRD", phone: "0274-000000" },
+    { id: "u2", role: "seeker", email: "pelamar@test.test", password: "password123", full_name: "Pelamar Demo", phone: "08123456789" },
+    { id: "u3", role: "seeker", email: "rina@test.test", password: "password123", full_name: "Rina Pratiwi", phone: "08111111111" },
+    { id: "u4", role: "seeker", email: "budi@test.test", password: "password123", full_name: "Budi Santoso", phone: "08222222222" },
   ];
-  const cvs = [
-    { id: "cv1", userId: "s1", name: "CV_Pelamar_Demo.pdf", size: 210000, uploadedAt: now - 86400000 * 3, active: true },
-    { id: "cv2", userId: "s2", name: "CV_Rina.pdf", size: 180000, uploadedAt: now - 86400000 * 4, active: true },
-    { id: "cv3", userId: "s3", name: "CV_Budi.docx", size: 90000, uploadedAt: now - 86400000 * 4, active: true },
-  ];
-  const mkApp = (id, seekerId, cvId, jobId, score, status) => ({
-    id, jobId, seekerId, cvId, note: "", score, status, createdAt: now - 86400000,
-    history: [{ status: "Dikirim", at: now - 86400000 }, ...(status !== "Dikirim" ? [{ status, at: now - 3600000 }] : [])],
+  const companies = [{ id: "co1", user_id: "u1", name: "PT Nusantara Digital Indonesia", industry: "Teknologi Informasi", address: "Yogyakarta", description: "Perusahaan pengembang perangkat lunak." }];
+  const job = (id, title, location, job_type, category, requirements, description, createdAgo, extra = {}) => ({
+    id, company_id: "co1", company_name: "PT Nusantara Digital Indonesia", source: "internal", title, description, requirements,
+    location, job_type, category, contact_info: "hrd@nusantara.test", external_url: null, status: "aktif", created_at: now - day * createdAgo, ...extra,
   });
-  const applications = [
-    mkApp("a1", "s3", "cv3", "j1", 0, "Dikirim"),
-    mkApp("a2", "s2", "cv2", "j1", 100, "Ditinjau"),
-    mkApp("a3", "s1", "cv1", "j1", 50, "Dikirim"),
+  const jobs = [
+    job("j1", "Front-end Developer", "Yogyakarta", "Penuh waktu", "Teknologi Informasi", "react, javascript, tailwind css, git", "Membangun antarmuka web dengan React.", 2),
+    job("j2", "Back-end Developer", "Remote", "Kontrak", "Teknologi Informasi", "node.js, sql, docker", "Mengembangkan REST API dan database.", 5),
+    job("j3", "Magang Quality Assurance", "Sleman", "Magang", "Teknologi Informasi", "testing, sql", "Menguji aplikasi web dan mobile.", 8),
+    job("j4", "Customer Service", "Jakarta", "Penuh waktu", "Administrasi", "komunikasi, microsoft excel", "Lowongan dari situs mitra.", 3,
+      { company_id: null, company_name: "PT Contoh Eksternal", source: "external", external_url: "https://example.com/lowongan/123", contact_info: "" }),
   ];
-  return { users: [company, ...seekers], jobs, cvs, applications, scanned: [] };
+  const cv = (id, user_id, file_name, file_type, text) => ({ id, user_id, file_name, file_type, extracted_text: text, uploaded_at: now - day * 3 });
+  const cvs = [
+    cv("cv1", "u2", "CV_Pelamar_Demo.pdf", "pdf", "react javascript sql html css"),
+    cv("cv2", "u3", "CV_Rina.pdf", "pdf", "react javascript tailwind css git"),
+    cv("cv3", "u4", "CV_Budi.docx", "docx", "php mysql laravel"),
+  ];
+  const app = (id, user_id, cv_id, match_score, status) => ({ id, job_id: "j1", user_id, cv_id, status, match_score, applied_at: now - day });
+  const applications = [app("a1", "u4", "cv3", 0, "Dikirim"), app("a2", "u3", "cv2", 100, "Ditinjau"), app("a3", "u2", "cv1", 50, "Dikirim")];
+  return { users, companies, jobs, cvs, applications, poster_scans: [] };
 }
 
 function load() {
@@ -53,8 +52,9 @@ function load() {
 }
 const save = (d) => localStorage.setItem(KEY, JSON.stringify(d));
 
-const publicUser = (u) => ({ id: u.id, role: u.role, email: u.email, name: u.profile.fullName || u.profile.companyName });
-const session = (u) => { localStorage.setItem(TOKEN, u.id); return { token: u.id, user: publicUser(u) }; };
+const companyOf = (d, u) => d.companies.find((c) => c.user_id === u.id) || null;
+const publicUser = (d, u) => ({ id: u.id, role: u.role, email: u.email, full_name: u.full_name, phone: u.phone, company: companyOf(d, u) });
+const session = (d, u) => { localStorage.setItem(TOKEN, u.id); return { token: u.id, user: publicUser(d, u) }; };
 
 function currentUser(d, role) {
   const u = d.users.find((x) => x.id === localStorage.getItem(TOKEN));
@@ -62,17 +62,23 @@ function currentUser(d, role) {
   if (role && u.role !== role) throw new Error("Tidak punya akses");
   return u;
 }
+const optionalUser = (d) => d.users.find((x) => x.id === localStorage.getItem(TOKEN)) || null;
 
-// Skor kecocokan sederhana (keahlian CV vs syarat lowongan). Di sistem asli,
-// skor dihitung AI (Gemini) di backend; front end hanya menampilkan.
-function matchScore(seeker, requirements) {
-  const need = (requirements || []).map(norm);
-  if (!need.length || !seeker) return 0;
-  const have = new Set((seeker.profile.skills || []).map(norm));
-  return Math.round((need.filter((n) => have.has(n)).length / need.length) * 100);
+const sortBy = (arr, f) => [...arr].sort((a, b) => f(b) - f(a));
+// CV terbaru dipakai untuk pencocokan (ERD tidak punya penanda CV aktif).
+const latestCv = (d, userId) => sortBy(d.cvs.filter((c) => c.user_id === userId), (c) => c.uploaded_at)[0] || null;
+
+// Setara tabel match_results: cocokkan extracted_text CV dengan requirements lowongan.
+function matchResult(cv, job) {
+  const reqs = splitReq(job.requirements);
+  if (!cv || !reqs.length) return null;
+  const text = norm(cv.extracted_text || "");
+  const matched = reqs.filter((r) => text.includes(norm(r)));
+  const missing = reqs.filter((r) => !text.includes(norm(r)));
+  return { cv_id: cv.id, job_id: job.id, score: Math.round((matched.length / reqs.length) * 100), matched_skills: matched, missing_skills: missing, summary: `${matched.length} dari ${reqs.length} syarat sesuai dengan CV.` };
 }
-const hasActiveCv = (d, userId) => d.cvs.some((c) => c.userId === userId && c.active);
-const sort = (arr, f = (x) => x.createdAt) => [...arr].sort((a, b) => f(b) - f(a));
+
+const jobView = (job, match) => ({ ...job, match_score: match ? match.score : null });
 
 export const mockApi = {
   // ---- Auth & profil ----
@@ -80,162 +86,161 @@ export const mockApi = {
     await delay(); const d = load();
     const email = p.email.trim().toLowerCase();
     if (d.users.some((u) => u.email === email)) throw new Error("Email sudah terdaftar");
-    const profile = p.role === "seeker"
-      ? { fullName: p.fullName, phone: p.phone || "", city: "", headline: "", education: "", about: "", skills: [] }
-      : { companyName: p.companyName, industry: p.industry || "", city: p.city || "", website: "", phone: "", about: "" };
-    const user = { id: uid(), role: p.role, email, password: p.password, profile };
-    d.users.push(user); save(d); return session(user);
+    const user = { id: uid(), role: p.role, email, password: p.password, full_name: p.full_name, phone: p.phone || "" };
+    d.users.push(user);
+    if (p.role === "company") d.companies.push({ id: uid(), user_id: user.id, name: p.company_name, industry: p.industry || "", address: p.address || "", description: "" });
+    save(d); return session(d, user);
   },
   async login({ email, password }) {
     await delay(); const d = load();
     const u = d.users.find((x) => x.email === email.trim().toLowerCase() && x.password === password);
     if (!u) throw new Error("Email atau password salah");
-    return session(u);
+    return session(d, u);
   },
-  async me() {
-    const d = load(); const u = d.users.find((x) => x.id === localStorage.getItem(TOKEN));
-    return u ? publicUser(u) : null;
-  },
+  async me() { const d = load(); const u = optionalUser(d); return u ? publicUser(d, u) : null; },
   logout() { localStorage.removeItem(TOKEN); },
-  async getProfile() { await delay(100); return currentUser(load()).profile; },
-  async updateProfile(profile) {
+  async getProfile() {
+    await delay(100); const d = load(); const u = currentUser(d);
+    const base = { full_name: u.full_name, phone: u.phone, email: u.email };
+    const c = companyOf(d, u);
+    return c ? { ...base, company_name: c.name, industry: c.industry, address: c.address, description: c.description } : base;
+  },
+  async updateProfile(p) {
     await delay(); const d = load(); const u = currentUser(d);
-    u.profile = { ...u.profile, ...profile }; save(d); return publicUser(u);
+    u.full_name = p.full_name; u.phone = p.phone || "";
+    const c = companyOf(d, u);
+    if (c) Object.assign(c, { name: p.company_name, industry: p.industry || "", address: p.address || "", description: p.description || "" });
+    save(d); return publicUser(d, u);
   },
 
-  // ---- CV ----
-  async listCvs() { await delay(100); const d = load(); const u = currentUser(d, "seeker"); return sort(d.cvs.filter((c) => c.userId === u.id), (c) => c.uploadedAt); },
+  // ---- CV (tabel cvs) ----
+  async listCvs() { await delay(100); const d = load(); const u = currentUser(d, "seeker"); return sortBy(d.cvs.filter((c) => c.user_id === u.id), (c) => c.uploaded_at).map(({ extracted_text, ...c }) => c); },
   async uploadCv(file) {
     await delay(600); const d = load(); const u = currentUser(d, "seeker");
-    const first = !hasActiveCv(d, u.id);
-    d.cvs.push({ id: uid(), userId: u.id, name: file.name, size: file.size, uploadedAt: Date.now(), active: first });
+    d.cvs.push({ id: uid(), user_id: u.id, file_name: file.name, file_type: file.name.toLowerCase().endsWith(".pdf") ? "pdf" : "docx", extracted_text: SAMPLE_CV_TEXT, uploaded_at: Date.now() });
     save(d);
-  },
-  async setActiveCv(id) {
-    await delay(100); const d = load(); const u = currentUser(d, "seeker");
-    d.cvs.forEach((c) => { if (c.userId === u.id) c.active = c.id === id; }); save(d);
   },
   async deleteCv(id) {
     await delay(); const d = load(); const u = currentUser(d, "seeker");
-    if (d.applications.some((a) => a.cvId === id)) throw new Error("CV ini dipakai pada lamaran dan tidak bisa dihapus");
-    d.cvs = d.cvs.filter((c) => !(c.id === id && c.userId === u.id));
-    const mine = d.cvs.filter((c) => c.userId === u.id);
-    if (mine.length && !mine.some((c) => c.active)) mine[0].active = true;
-    save(d);
+    if (d.applications.some((a) => a.cv_id === id)) throw new Error("CV ini dipakai pada lamaran dan tidak bisa dihapus");
+    d.cvs = d.cvs.filter((c) => !(c.id === id && c.user_id === u.id)); save(d);
   },
 
   // ---- Lowongan (pencari kerja) ----
-  async searchJobs({ q = "", location = "", type = "", level = "", sortBy = "terbaru" } = {}) {
-    await delay(); const d = load();
-    const u = d.users.find((x) => x.id === localStorage.getItem(TOKEN));
-    const seeker = u?.role === "seeker" ? u : null;
-    const canScore = seeker && hasActiveCv(d, seeker.id);
+  async searchJobs({ q = "", location = "", job_type = "", category = "", sort_by = "terbaru" } = {}) {
+    await delay(); const d = load(); const u = optionalUser(d);
+    const cv = u?.role === "seeker" ? latestCv(d, u.id) : null;
     const s = norm(q);
-    let rows = d.jobs.filter((j) => j.status === "aktif")
-      .filter((j) => !s || [j.title, j.companyName, ...j.requirements].some((t) => norm(t).includes(s)))
+    const rows = d.jobs.filter((j) => j.status === "aktif" && j.source !== "poster")
+      .filter((j) => !s || [j.title, j.company_name, j.requirements].some((t) => norm(t).includes(s)))
       .filter((j) => !location || norm(j.location).includes(norm(location)))
-      .filter((j) => !type || j.type === type)
-      .filter((j) => !level || j.level === level)
-      .map((j) => ({ ...j, score: canScore ? matchScore(seeker, j.requirements) : null }));
-    return sortBy === "skor" && canScore ? sort(rows, (j) => j.score) : sort(rows);
+      .filter((j) => !job_type || j.job_type === job_type)
+      .filter((j) => !category || j.category === category)
+      .map((j) => jobView(j, matchResult(cv, j)));
+    return sort_by === "skor" && cv ? sortBy(rows, (j) => j.match_score) : sortBy(rows, (j) => j.created_at);
   },
   async getJob(id) {
     await delay(150); const d = load();
     const j = d.jobs.find((x) => x.id === id); if (!j) throw new Error("Lowongan tidak ditemukan");
-    const u = d.users.find((x) => x.id === localStorage.getItem(TOKEN));
-    const seeker = u?.role === "seeker" ? u : null;
-    return {
-      ...j,
-      score: seeker && hasActiveCv(d, seeker.id) ? matchScore(seeker, j.requirements) : null,
-      applied: !!seeker && d.applications.some((a) => a.jobId === id && a.seekerId === seeker.id),
-    };
+    const u = optionalUser(d); const seeker = u?.role === "seeker" ? u : null;
+    const match = seeker ? matchResult(latestCv(d, seeker.id), j) : null;
+    return { ...j, match, applied: !!seeker && d.applications.some((a) => a.job_id === id && a.user_id === seeker.id) };
   },
 
   // ---- Lowongan (perusahaan, CRUD) ----
   async myJobs() {
-    await delay(150); const d = load(); const u = currentUser(d, "company");
-    return sort(d.jobs.filter((j) => j.companyId === u.id)).map((j) => ({ ...j, applicantCount: d.applications.filter((a) => a.jobId === j.id).length }));
+    await delay(150); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
+    return sortBy(d.jobs.filter((j) => j.company_id === c.id), (j) => j.created_at).map((j) => ({ ...j, applicant_count: d.applications.filter((a) => a.job_id === j.id).length }));
   },
   async getMyJob(id) {
-    await delay(100); const d = load(); const u = currentUser(d, "company");
-    const j = d.jobs.find((x) => x.id === id && x.companyId === u.id); if (!j) throw new Error("Lowongan tidak ditemukan");
+    await delay(100); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
+    const j = d.jobs.find((x) => x.id === id && x.company_id === c.id); if (!j) throw new Error("Lowongan tidak ditemukan");
     return j;
   },
   async createJob(p) {
-    await delay(); const d = load(); const u = currentUser(d, "company");
-    const job = { ...p, id: uid(), companyId: u.id, companyName: u.profile.companyName, status: "aktif", source: "internal", createdAt: Date.now() };
+    await delay(); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
+    const job = { ...p, id: uid(), company_id: c.id, company_name: c.name, source: "internal", external_url: null, created_at: Date.now() };
     d.jobs.push(job); save(d); return job;
   },
   async updateJob(id, p) {
-    await delay(); const d = load(); const u = currentUser(d, "company");
-    const j = d.jobs.find((x) => x.id === id && x.companyId === u.id); if (!j) throw new Error("Lowongan tidak ditemukan");
+    await delay(); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
+    const j = d.jobs.find((x) => x.id === id && x.company_id === c.id); if (!j) throw new Error("Lowongan tidak ditemukan");
     Object.assign(j, p); save(d); return j;
   },
   async deleteJob(id) {
-    await delay(); const d = load(); const u = currentUser(d, "company");
-    d.jobs = d.jobs.filter((j) => !(j.id === id && j.companyId === u.id));
-    d.applications = d.applications.filter((a) => a.jobId !== id); save(d);
+    await delay(); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
+    d.jobs = d.jobs.filter((j) => !(j.id === id && j.company_id === c.id));
+    d.applications = d.applications.filter((a) => a.job_id !== id); save(d);
   },
 
-  // ---- Lamaran ----
-  async apply(jobId, { cvId, note }) {
+  // ---- Lamaran (tabel applications) ----
+  async apply(jobId, { cv_id }) {
     await delay(); const d = load(); const u = currentUser(d, "seeker");
-    const job = d.jobs.find((j) => j.id === jobId); if (!job) throw new Error("Lowongan tidak ditemukan");
-    if (d.applications.some((a) => a.jobId === jobId && a.seekerId === u.id)) throw new Error("Kamu sudah melamar lowongan ini");
-    if (!d.cvs.some((c) => c.id === cvId && c.userId === u.id)) throw new Error("Pilih CV terlebih dahulu");
-    const now = Date.now();
-    d.applications.push({ id: uid(), jobId, seekerId: u.id, cvId, note: note || "", score: matchScore(u, job.requirements), status: "Dikirim", createdAt: now, history: [{ status: "Dikirim", at: now }] });
+    const job = d.jobs.find((j) => j.id === jobId);
+    if (!job) throw new Error("Lowongan tidak ditemukan");
+    if (job.source !== "internal" || job.status !== "aktif") throw new Error("Lowongan ini tidak menerima lamaran");
+    if (d.applications.some((a) => a.job_id === jobId && a.user_id === u.id)) throw new Error("Kamu sudah melamar lowongan ini");
+    const cv = d.cvs.find((c) => c.id === cv_id && c.user_id === u.id);
+    if (!cv) throw new Error("Pilih CV terlebih dahulu");
+    d.applications.push({ id: uid(), job_id: jobId, user_id: u.id, cv_id, status: "Dikirim", match_score: matchResult(cv, job)?.score ?? 0, applied_at: Date.now() });
     save(d);
   },
   async myApplications() {
     await delay(150); const d = load(); const u = currentUser(d, "seeker");
-    return sort(d.applications.filter((a) => a.seekerId === u.id)).map((a) => {
-      const j = d.jobs.find((x) => x.id === a.jobId);
-      return { ...a, jobTitle: j?.title || "(lowongan dihapus)", companyName: j?.companyName || "-", cvName: d.cvs.find((c) => c.id === a.cvId)?.name || "-" };
+    return sortBy(d.applications.filter((a) => a.user_id === u.id), (a) => a.applied_at).map((a) => {
+      const j = d.jobs.find((x) => x.id === a.job_id);
+      return { ...a, job_title: j?.title || "(lowongan dihapus)", company_name: j?.company_name || "-", cv_file_name: d.cvs.find((c) => c.id === a.cv_id)?.file_name || "-" };
     });
   },
   async jobApplicants(jobId) {
-    await delay(150); const d = load(); const u = currentUser(d, "company");
-    const job = d.jobs.find((j) => j.id === jobId && j.companyId === u.id); if (!job) throw new Error("Lowongan tidak ditemukan");
-    const applicants = d.applications.filter((a) => a.jobId === jobId).map((a) => {
-      const s = d.users.find((x) => x.id === a.seekerId);
-      return { ...a, seeker: { ...s.profile, email: s.email }, cvName: d.cvs.find((c) => c.id === a.cvId)?.name || "-" };
+    await delay(150); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
+    const job = d.jobs.find((j) => j.id === jobId && j.company_id === c.id); if (!job) throw new Error("Lowongan tidak ditemukan");
+    const applicants = d.applications.filter((a) => a.job_id === jobId).map((a) => {
+      const s = d.users.find((x) => x.id === a.user_id); const cv = d.cvs.find((x) => x.id === a.cv_id);
+      return { ...a, cv_file_name: cv?.file_name || "-", applicant: { full_name: s.full_name, email: s.email, phone: s.phone }, match: matchResult(cv, job) };
     });
-    return { job, applicants: sort(applicants, (a) => a.score) };
+    return { job, applicants: sortBy(applicants, (a) => a.match_score) };
   },
   async updateStatus(appId, status) {
-    await delay(150); const d = load(); const u = currentUser(d, "company");
+    await delay(150); const d = load(); const u = currentUser(d, "company"); const c = companyOf(d, u);
     const a = d.applications.find((x) => x.id === appId);
-    const job = a && d.jobs.find((j) => j.id === a.jobId && j.companyId === u.id);
-    if (!job) throw new Error("Lamaran tidak ditemukan");
-    a.status = status; a.history.push({ status, at: Date.now() }); save(d);
+    if (!a || !d.jobs.some((j) => j.id === a.job_id && j.company_id === c.id)) throw new Error("Lamaran tidak ditemukan");
+    a.status = status; save(d);
   },
 
-  // ---- Pemindaian poster ----
+  // ---- Pemindaian poster (tabel poster_scans) ----
+  // Langkah 1: scan. Membuat poster_scans berstatus "pending"; belum jadi lowongan.
   async scanPoster(file) {
-    await delay(1600); // simulasi AI membaca gambar
-    // Mock: hasil contoh. Backend asli mengirim gambar ke Gemini lalu mengembalikan
-    // { fields, confidence } dengan bentuk yang sama.
-    return {
-      fields: {
-        title: "Staff IT Support", companyName: "CV Maju Bersama", location: "Sleman, DIY", type: "Penuh waktu",
-        level: "Fresh graduate", deadline: "2026-12-20", contact: "hrd@majubersama.test / 0812-3456-7890",
-        description: `Dibaca dari poster: ${file.name}`, requirements: ["sql", "troubleshooting", "jaringan"],
-      },
-      confidence: { title: 0.97, companyName: 0.92, location: 0.9, type: 0.85, level: 0.6, deadline: 0.55, contact: 0.8, requirements: 0.7 },
+    await delay(1600); const d = load(); const u = currentUser(d, "seeker");
+    // Mock: hasil contoh. Backend asli mengirim gambar ke Gemini; bentuk balasan sama.
+    const fields = {
+      title: "Staff IT Support", company_name: "CV Maju Bersama", location: "Sleman, DIY", job_type: "Penuh waktu", category: "Teknologi Informasi",
+      contact_info: "hrd@majubersama.test / 0812-3456-7890", description: `Dibaca dari poster: ${file.name}`, requirements: "sql, troubleshooting, jaringan",
     };
+    const scan = { id: uid(), user_id: u.id, job_id: null, image_path: file.name, extracted_data: fields, status: "pending", scanned_at: Date.now() };
+    d.poster_scans.push(scan); save(d);
+    return { scan_id: scan.id, fields, confidence: { title: 0.97, company_name: 0.92, location: 0.9, job_type: 0.85, category: 0.6, contact_info: 0.55, requirements: 0.7 } };
   },
-  async saveScannedJob(data) {
+  // Langkah 2: setelah pengguna memeriksa dan mengonfirmasi, baru dibuat lowongan (jobs.source = "poster").
+  async confirmScan(scanId, fields) {
     await delay(); const d = load(); const u = currentUser(d, "seeker");
-    d.scanned.push({ ...data, id: uid(), userId: u.id, source: "poster", createdAt: Date.now() }); save(d);
+    const scan = d.poster_scans.find((s) => s.id === scanId && s.user_id === u.id && s.status === "pending");
+    if (!scan) throw new Error("Hasil scan tidak ditemukan atau sudah disimpan");
+    const job = { ...fields, id: uid(), company_id: null, source: "poster", external_url: null, status: "aktif", created_at: Date.now() };
+    d.jobs.push(job);
+    scan.job_id = job.id; scan.status = "confirmed"; scan.extracted_data = fields; save(d);
   },
-  async listScannedJobs() {
-    await delay(100); const d = load(); const u = currentUser(d, "seeker");
-    const canScore = hasActiveCv(d, u.id);
-    return sort(d.scanned.filter((s) => s.userId === u.id)).map((s) => ({ ...s, score: canScore ? matchScore(u, s.requirements) : null }));
+  async listScans() {
+    await delay(100); const d = load(); const u = currentUser(d, "seeker"); const cv = latestCv(d, u.id);
+    return sortBy(d.poster_scans.filter((s) => s.user_id === u.id && s.status === "confirmed"), (s) => s.scanned_at).map((s) => {
+      const job = d.jobs.find((j) => j.id === s.job_id); const match = job ? matchResult(cv, job) : null;
+      return { id: s.id, status: s.status, scanned_at: s.scanned_at, job, match, match_score: match ? match.score : null };
+    });
   },
-  async deleteScannedJob(id) {
+  async deleteScan(id) {
     await delay(100); const d = load(); const u = currentUser(d, "seeker");
-    d.scanned = d.scanned.filter((s) => !(s.id === id && s.userId === u.id)); save(d);
+    const s = d.poster_scans.find((x) => x.id === id && x.user_id === u.id);
+    if (s?.job_id) d.jobs = d.jobs.filter((j) => j.id !== s.job_id);
+    d.poster_scans = d.poster_scans.filter((x) => x.id !== id); save(d);
   },
 };

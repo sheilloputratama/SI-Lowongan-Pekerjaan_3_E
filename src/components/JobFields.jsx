@@ -1,19 +1,19 @@
-import { Field, TagInput, inputCls } from "./ui.jsx";
-import { JOB_LEVELS, JOB_TYPES } from "../utils.js";
+import { Field, inputCls } from "./ui.jsx";
+import { CATEGORIES, JOB_TYPES } from "../utils.js";
 
 // Validasi bersama untuk form lowongan (perusahaan) dan hasil scan poster.
 export function validateJob(f) {
   const e = {};
   if (!f.title?.trim()) e.title = "Posisi wajib diisi";
   if (!f.location?.trim()) e.location = "Lokasi wajib diisi";
-  if (!f.type) e.type = "Pilih tipe pekerjaan";
-  if (!f.level) e.level = "Pilih level";
-  if (!f.deadline) e.deadline = "Batas lamaran wajib diisi";
-  if (!f.requirements?.length) e.requirements = "Isi minimal 1 keahlian";
+  if (!f.job_type) e.job_type = "Pilih tipe pekerjaan";
+  if (!f.category) e.category = "Pilih kategori";
+  if (!f.requirements?.trim()) e.requirements = "Isi persyaratan/keahlian";
   return e;
 }
 
-// Kolom form lowongan. `flag(name)` (opsional) menandai field dengan keyakinan AI rendah.
+// Kolom form lowongan sesuai tabel jobs. `flag(name)` (opsional) menandai field
+// dengan keyakinan AI rendah. `extra` = field tambahan (mis. status, perusahaan).
 export default function JobFields({ form, set, errors = {}, flag = () => false, extra }) {
   const mark = (name) => (flag(name) ? " ring-2 ring-amber-300 border-amber-400" : "");
   const hint = (name) => (flag(name) ? "AI kurang yakin, mohon periksa" : undefined);
@@ -28,27 +28,24 @@ export default function JobFields({ form, set, errors = {}, flag = () => false, 
       <Field label="Lokasi *" error={errors.location} hint={hint("location")}>
         <input className={inputCls + mark("location")} value={form.location || ""} onChange={(e) => set("location", e.target.value)} />
       </Field>
-      <Field label="Gaji" hint={hint("salary")}>
-        <input className={inputCls} value={form.salary || ""} onChange={(e) => set("salary", e.target.value)} placeholder="Contoh: Rp5.000.000 - Rp7.000.000" />
-      </Field>
-      <Field label="Tipe pekerjaan *" error={errors.type} hint={hint("type")}>
-        <select className={inputCls + mark("type")} value={form.type || ""} onChange={(e) => set("type", e.target.value)}>
+      <Field label="Tipe pekerjaan *" error={errors.job_type} hint={hint("job_type")}>
+        <select className={inputCls + mark("job_type")} value={form.job_type || ""} onChange={(e) => set("job_type", e.target.value)}>
           <option value="">Pilih...</option>
           {JOB_TYPES.map((t) => <option key={t}>{t}</option>)}
         </select>
       </Field>
-      <Field label="Level *" error={errors.level} hint={hint("level")}>
-        <select className={inputCls + mark("level")} value={form.level || ""} onChange={(e) => set("level", e.target.value)}>
+      <Field label="Kategori *" error={errors.category} hint={hint("category")}>
+        <select className={inputCls + mark("category")} value={form.category || ""} onChange={(e) => set("category", e.target.value)}>
           <option value="">Pilih...</option>
-          {JOB_LEVELS.map((t) => <option key={t}>{t}</option>)}
+          {CATEGORIES.map((t) => <option key={t}>{t}</option>)}
         </select>
       </Field>
-      <Field label="Batas lamaran *" error={errors.deadline} hint={hint("deadline")}>
-        <input type="date" className={inputCls + mark("deadline")} value={form.deadline || ""} onChange={(e) => set("deadline", e.target.value)} />
+      <Field label="Kontak" hint={hint("contact_info") || "Email atau nomor telepon untuk pelamar"}>
+        <input className={inputCls + mark("contact_info")} value={form.contact_info || ""} onChange={(e) => set("contact_info", e.target.value)} />
       </Field>
       <div className="md:col-span-2">
-        <Field label="Keahlian yang dibutuhkan *" error={errors.requirements} hint={hint("requirements") || "Ketik lalu Enter. Dipakai untuk menghitung skor kecocokan."}>
-          <TagInput value={form.requirements || []} onChange={(v) => set("requirements", v)} placeholder="Contoh: react, sql" />
+        <Field label="Persyaratan / keahlian *" error={errors.requirements} hint={hint("requirements") || "Pisahkan dengan koma atau baris baru. Dipakai untuk menghitung skor kecocokan."}>
+          <textarea rows={3} className={inputCls + mark("requirements")} value={form.requirements || ""} onChange={(e) => set("requirements", e.target.value)} placeholder="react, javascript, sql" />
         </Field>
       </div>
       <div className="md:col-span-2">

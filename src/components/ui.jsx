@@ -136,3 +136,28 @@ export function ConfirmDialog({ open, title, message, confirmText = "Ya", danger
     </div>
   );
 }
+
+// Hasil pencocokan CV dan lowongan (tabel match_results): skor, keahlian cocok, keahlian kurang, ringkasan.
+export function MatchDetail({ match, label = "Kecocokan dengan CV terbaru" }) {
+  if (!match) return null;
+  return (
+    <div className="space-y-3">
+      <ScoreBar score={match.score} label={label} />
+      {match.matched_skills?.length > 0 && (
+        <div>
+          <p className="mb-1 text-xs text-slate-500">Sudah sesuai</p>
+          <Tags items={match.matched_skills} highlight={match.matched_skills} />
+        </div>
+      )}
+      {match.missing_skills?.length > 0 && (
+        <div>
+          <p className="mb-1 text-xs text-slate-500">Belum ada di CV</p>
+          <div className="flex flex-wrap gap-1.5">
+            {match.missing_skills.map((t) => <span key={t} className="rounded-md bg-amber-100 px-2 py-0.5 text-xs text-amber-800">{t}</span>)}
+          </div>
+        </div>
+      )}
+      {match.summary && <p className="text-xs text-slate-500">{match.summary}</p>}
+    </div>
+  );
+}

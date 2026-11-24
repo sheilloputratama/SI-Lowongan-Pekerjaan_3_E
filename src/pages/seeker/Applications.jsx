@@ -46,21 +46,16 @@ export default function Applications() {
             <Card key={a.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <Link to={`/jobs/${a.jobId}`} className="font-semibold hover:text-indigo-600">{a.jobTitle}</Link>
-                  <p className="text-sm text-slate-600">{a.companyName}</p>
-                  <p className="mt-1 text-xs text-slate-500">Dikirim {fmtDate(a.createdAt)} • CV: {a.cvName}</p>
+                  <Link to={`/jobs/${a.job_id}`} className="font-semibold hover:text-indigo-600">{a.job_title}</Link>
+                  <p className="text-sm text-slate-600">{a.company_name}</p>
+                  <p className="mt-1 text-xs text-slate-500">Dikirim {fmtDate(a.applied_at)} • CV: {a.cv_file_name}</p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <ScoreBar score={a.score} />
+                  <ScoreBar score={a.match_score} />
                   <StatusBadge status={a.status} />
                 </div>
               </div>
               <Timeline app={a} />
-              {a.history?.length > 1 && (
-                <p className="mt-3 text-xs text-slate-400">
-                  Terakhir diperbarui {fmtDate(a.history[a.history.length - 1].at)} → {a.history[a.history.length - 1].status}
-                </p>
-              )}
             </Card>
           ))}
         </div>

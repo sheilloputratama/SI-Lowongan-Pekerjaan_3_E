@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client.js";
 import { useAuth } from "../context/AuthContext.jsx";
-import { Alert, Card, Field, PageTitle, Spinner, TagInput, btnPrimary, inputCls } from "./ui.jsx";
+import { Alert, Card, Field, PageTitle, Spinner, btnPrimary, inputCls } from "./ui.jsx";
 
 // Form profil generik. `fields`: [{ name, label, type: "text"|"textarea"|"tags", required, hint }]
 export default function ProfileForm({ title, subtitle, fields }) {
@@ -44,10 +44,8 @@ export default function ProfileForm({ title, subtitle, fields }) {
             <Field key={f.name} label={f.label + (f.required ? " *" : "")} error={errors[f.name]} hint={f.hint}>
               {f.type === "textarea" ? (
                 <textarea rows={4} className={inputCls} value={form[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)} />
-              ) : f.type === "tags" ? (
-                <TagInput value={form[f.name] || []} onChange={(v) => set(f.name, v)} placeholder="Ketik lalu tekan Enter" />
               ) : (
-                <input className={inputCls} value={form[f.name] ?? ""} onChange={(e) => set(f.name, e.target.value)} />
+                <input className={inputCls} value={form[f.name] ?? ""} readOnly={f.readOnly} disabled={f.readOnly} onChange={(e) => set(f.name, e.target.value)} />
               )}
             </Field>
           ))}

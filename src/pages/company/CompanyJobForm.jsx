@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../api/client.js";
 import JobFields, { validateJob } from "../../components/JobFields.jsx";
-import { Alert, Card, PageTitle, Spinner, btnGhost, btnPrimary } from "../../components/ui.jsx";
+import { Alert, Card, Field, PageTitle, Spinner, btnGhost, btnPrimary, inputCls } from "../../components/ui.jsx";
+import { JOB_STATUSES } from "../../utils.js";
 
-const BLANK = { title: "", location: "", type: "", level: "", salary: "", deadline: "", description: "", requirements: [] };
+const BLANK = { title: "", location: "", job_type: "", category: "", contact_info: "", description: "", requirements: "", status: "aktif" };
 
 export default function CompanyJobForm() {
   const { id } = useParams();
@@ -40,7 +41,14 @@ export default function CompanyJobForm() {
       <PageTitle title={editing ? "Edit Lowongan" : "Pasang Lowongan"} />
       <Card>
         <form onSubmit={submit} className="space-y-4" noValidate>
-          <JobFields form={form} set={set} errors={errors} />
+          <JobFields form={form} set={set} errors={errors}
+            extra={
+              <Field label="Status lowongan" hint="Lowongan berstatus ditutup tidak tampil di pencarian">
+                <select className={inputCls} value={form.status} onChange={(e) => set("status", e.target.value)}>
+                  {JOB_STATUSES.map((s) => <option key={s}>{s}</option>)}
+                </select>
+              </Field>
+            } />
           <Alert>{error}</Alert>
           <div className="flex gap-2">
             <button className={btnPrimary} disabled={busy}>{busy ? "Menyimpan..." : editing ? "Simpan perubahan" : "Pasang lowongan"}</button>

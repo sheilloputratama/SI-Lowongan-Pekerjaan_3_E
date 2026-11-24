@@ -13,7 +13,7 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [role, setRole] = useState("seeker");
-  const [form, setForm] = useState({ fullName: "", companyName: "", industry: "", city: "", phone: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ full_name: "", company_name: "", industry: "", address: "", phone: "", email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -22,8 +22,8 @@ export default function Register() {
 
   const validate = () => {
     const e = {};
-    if (role === "seeker" && !form.fullName.trim()) e.fullName = "Nama lengkap wajib diisi";
-    if (role === "company" && !form.companyName.trim()) e.companyName = "Nama perusahaan wajib diisi";
+    if (!form.full_name.trim()) e.full_name = role === "seeker" ? "Nama lengkap wajib diisi" : "Nama penanggung jawab wajib diisi";
+    if (role === "company" && !form.company_name.trim()) e.company_name = "Nama perusahaan wajib diisi";
     if (!isEmail(form.email)) e.email = "Format email tidak valid";
     if (form.password.length < 8) e.password = "Password minimal 8 karakter";
     if (form.confirm !== form.password) e.confirm = "Konfirmasi password tidak sama";
@@ -38,8 +38,8 @@ export default function Register() {
     try {
       const { confirm, ...rest } = form;
       const payload = role === "seeker"
-        ? { role, fullName: rest.fullName, phone: rest.phone, email: rest.email, password: rest.password }
-        : { role, companyName: rest.companyName, industry: rest.industry, city: rest.city, email: rest.email, password: rest.password };
+        ? { role, full_name: rest.full_name, phone: rest.phone, email: rest.email, password: rest.password }
+        : { role, full_name: rest.full_name, phone: rest.phone, email: rest.email, password: rest.password, company_name: rest.company_name, industry: rest.industry, address: rest.address };
       const user = await register(payload);
       navigate(homePath(user), { replace: true });
     } catch (err) {
@@ -63,14 +63,16 @@ export default function Register() {
         <form onSubmit={submit} className="space-y-4" noValidate>
           {role === "seeker" ? (
             <>
-              <Field label="Nama lengkap *" error={errors.fullName}><input className={inputCls} value={form.fullName} onChange={set("fullName")} /></Field>
+              <Field label="Nama lengkap *" error={errors.full_name}><input className={inputCls} value={form.full_name} onChange={set("full_name")} /></Field>
               <Field label="No. telepon"><input className={inputCls} value={form.phone} onChange={set("phone")} /></Field>
             </>
           ) : (
             <>
-              <Field label="Nama perusahaan *" error={errors.companyName}><input className={inputCls} value={form.companyName} onChange={set("companyName")} /></Field>
+              <Field label="Nama perusahaan *" error={errors.company_name}><input className={inputCls} value={form.company_name} onChange={set("company_name")} /></Field>
               <Field label="Bidang industri"><input className={inputCls} value={form.industry} onChange={set("industry")} /></Field>
-              <Field label="Kota"><input className={inputCls} value={form.city} onChange={set("city")} /></Field>
+              <Field label="Alamat"><input className={inputCls} value={form.address} onChange={set("address")} /></Field>
+              <Field label="Nama penanggung jawab *" error={errors.full_name}><input className={inputCls} value={form.full_name} onChange={set("full_name")} /></Field>
+              <Field label="No. telepon"><input className={inputCls} value={form.phone} onChange={set("phone")} /></Field>
             </>
           )}
           <Field label="Email *" error={errors.email}><input type="email" className={inputCls} value={form.email} onChange={set("email")} autoComplete="email" /></Field>

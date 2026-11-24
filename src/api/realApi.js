@@ -29,7 +29,6 @@ export const realApi = {
 
   listCvs: () => http("/cvs"),
   uploadCv: (file) => http("/cvs", { method: "POST", form: fileForm(file) }),
-  setActiveCv: (id) => http(`/cvs/${id}/active`, { method: "PATCH" }),
   deleteCv: (id) => http(`/cvs/${id}`, { method: "DELETE" }),
 
   searchJobs: (f) => http(`/jobs?${qs(f)}`),
@@ -41,13 +40,13 @@ export const realApi = {
   updateJob: (id, p) => http(`/company/jobs/${id}`, { method: "PUT", body: p }),
   deleteJob: (id) => http(`/company/jobs/${id}`, { method: "DELETE" }),
 
-  apply: (jobId, p) => http(`/jobs/${jobId}/apply`, { method: "POST", body: p }),
+  apply: (jobId, p) => http(`/jobs/${jobId}/apply`, { method: "POST", body: p }), // { cv_id }
   myApplications: () => http("/applications/me"),
   jobApplicants: (jobId) => http(`/company/jobs/${jobId}/applicants`), // { job, applicants } sudah urut skor
   updateStatus: (appId, status) => http(`/applications/${appId}/status`, { method: "PATCH", body: { status } }),
 
-  scanPoster: (file) => http("/poster/scan", { method: "POST", form: fileForm(file) }), // { fields, confidence }
-  saveScannedJob: (data) => http("/poster/jobs", { method: "POST", body: data }),
-  listScannedJobs: () => http("/poster/jobs"),
-  deleteScannedJob: (id) => http(`/poster/jobs/${id}`, { method: "DELETE" }),
+  scanPoster: (file) => http("/poster/scan", { method: "POST", form: fileForm(file) }), // { scan_id, fields, confidence }; poster_scans.status = pending
+  confirmScan: (scanId, fields) => http(`/poster/scans/${scanId}/confirm`, { method: "POST", body: fields }), // buat jobs (source=poster), status = confirmed
+  listScans: () => http("/poster/scans"),
+  deleteScan: (id) => http(`/poster/scans/${id}`, { method: "DELETE" }),
 };

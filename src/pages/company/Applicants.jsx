@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { api } from "../../api/client.js";
-import { Alert, Card, Empty, PageTitle, ScoreBar, Spinner, StatusBadge, Tags, inputCls } from "../../components/ui.jsx";
+import { Alert, Card, Empty, MatchDetail, PageTitle, ScoreBar, Spinner, StatusBadge, inputCls } from "../../components/ui.jsx";
 import { STATUSES, fmtDate } from "../../utils.js";
 
 export default function Applicants() {
@@ -11,14 +11,15 @@ export default function Applicants() {
   const [filter, setFilter] = useState("");
   const [msg, setMsg] = useState({ type: "", text: "" });
   const [updating, setUpdating] = useState("");
+  const [open, setOpen] = useState({});
 
   useEffect(() => { api.jobApplicants(id).then(setData).catch((e) => setMsg({ type: "error", text: e.message })); }, [id]);
 
-  // Urut skor tertinggi (default) atau terbaru; skor sama diurutkan yang melamar lebih dulu.
+  // Urut match_score tertinggi (default) atau terbaru; skor sama diurutkan yang melamar lebih dulu.
   const rows = useMemo(() => {
     if (!data) return [];
     const list = data.applicants.filter((a) => !filter || a.status === filter);
-    return [...list].sort((a, b) => (sortBy === "skor" ? b.score - a.score || a.createdAt - b.createdAt : b.createdAt - a.createdAt));
+    return [...list].sort((a, b) => (sortBy === "skor" ? b.match_score - a.match_score || a.applied_at - b.applied_at : b.applied_at - a.applied_at));
   }, [data, sortBy, filter]);
 
   const changeStatus = async (app, status) => {
@@ -27,7 +28,7 @@ export default function Applicants() {
     try {
       await api.updateStatus(app.id, status);
       setData((d) => ({ ...d, applicants: d.applicants.map((a) => (a.id === app.id ? { ...a, status } : a)) }));
-      setMsg({ type: "success", text: `Status ${app.seeker.fullName} diubah menjadi ${status}` });
+      setMsg({ type: "success", text: `Status ${app.applicant.full_name} diubah menjadi ${status}` });
     } catch (e) { setMsg({ type: "error", text: e.message }); }
     finally { setUpdating(""); }
   };
@@ -61,22 +62,26 @@ export default function Applicants() {
                 <div className="flex gap-3">
                   {sortBy === "skor" && !filter && <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-sm font-semibold text-slate-600">{i + 1}</span>}
                   <div>
-                    <p className="font-semibold">{a.seeker.fullName}</p>
-                    <p className="text-sm text-slate-600">{a.seeker.headline || "-"}</p>
-                    <p className="text-xs text-slate-500">{a.seeker.email} • {a.seeker.phone} • melamar {fmtDate(a.createdAt)}</p>
+                    <p className="font-semibold">{a.applicant.full_name}</p>
+                    <p className="text-xs text-slate-500">{a.applicant.email} • {a.applicant.phone || "-"} • melamar {fmtDate(a.applied_at)}</p>
+                    <p className="mt-1 text-xs text-slate-500">CV: {a.cv_file_name}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <ScoreBar score={a.score} />
+                  <ScoreBar score={a.match_score} />
                   <StatusBadge status={a.status} />
                 </div>
               </div>
-              <div className="mt-3">
-                <p className="mb-1 text-xs text-slate-500">Keahlian (hijau = sesuai syarat lowongan)</p>
-                <Tags items={a.seeker.skills || []} highlight={job.requirements} />
-              </div>
-              <p className="mt-3 text-xs text-slate-500">CV: {a.cvName}</p>
-              {a.note && <p className="mt-2 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">“{a.note}”</p>}
+
+              {a.match && (
+                <div className="mt-3">
+                  <button className="text-sm text-indigo-600" onClick={() => setOpen({ ...open, [a.id]: !open[a.id] })}>
+                    {open[a.id] ? "Sembunyikan detail kecocokan" : "Lihat detail kecocokan"}
+                  </button>
+                  {open[a.id] && <div className="mt-3 rounded-lg bg-slate-50 p-3"><MatchDetail match={a.match} label="Kecocokan CV dengan lowongan" /></div>}
+                </div>
+              )}
+
               <div className="mt-4 flex flex-wrap items-center gap-2">
                 <span className="text-sm text-slate-500">Ubah status:</span>
                 {STATUSES.map((s) => (
