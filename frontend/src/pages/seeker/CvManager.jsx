@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../../api/client.js";
 import { Alert, Card, ConfirmDialog, Empty, PageTitle, Spinner, btnGhost, btnPrimary } from "../../components/ui.jsx";
@@ -36,14 +37,23 @@ export default function CvManager() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <PageTitle title="CV Saya" subtitle="Unggah CV berformat PDF atau DOCX (maks. 2 MB). CV terbaru dipakai untuk menghitung kecocokan dengan SI Lowongan Kerja." />
+    <div className="mx-auto max-w-3xl space-y-6">
+      {/* BREADCRUMB */}
+      <nav className="flex items-center gap-2 text-xs text-[#616161]">
+        <Link to="/" className="hover:text-[#1976d2] transition flex items-center gap-1">
+          <span>🏠</span> Beranda
+        </Link>
+        <span>/</span>
+        <span className="font-semibold text-[#212121]">Manajemen Berkas CV</span>
+      </nav>
+
+      <PageTitle title="Berkas CV Saya" subtitle="Unggah berkas CV (PDF atau DOCX maks. 2 MB). Berkas terbaru otomatis dijadikan acuan analisis kecocokan AI." />
 
       <div
         onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
         onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); upload(e.dataTransfer.files[0]); }}
-        className={`mb-4 rounded-xl border-2 border-dashed p-8 text-center ${drag ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-white"}`}
+        className={`mb-4 rounded-2xl border-2 border-dashed p-8 text-center transition ${drag ? "border-[#1976d2] bg-[#eaf3fc]" : "border-[#dfe5ec] bg-white"}`}
       >
         <p className="text-sm text-slate-600">Tarik file CV ke sini, atau</p>
         <input ref={inputRef} type="file" accept=".pdf,.docx" className="hidden" onChange={(e) => upload(e.target.files[0])} />

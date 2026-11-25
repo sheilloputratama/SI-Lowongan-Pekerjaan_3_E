@@ -1,85 +1,129 @@
-# SI Lowongan Kerja: Front End
+# SI Lowongan Kerja
 
-Front end Sistem **SI Lowongan Kerja** berbasis web menggunakan React 18, Vite, Tailwind CSS, dan React Router. Data dan nama field mengikuti ERD kelompok (users, companies, jobs, cvs, applications, match_results, poster_scans) dengan konvensi *snake_case*.
+Sistem Informasi Lowongan Kerja berbasis web dengan integrasi analisis kecocokan CV dan pemindaian poster berbasis AI. Proyek dibangun dengan arsitektur terpisah antara **Frontend** dan **Backend**:
 
-## Menjalankan
-
-```powershell
-npm install
-npm run dev        # http://localhost:5173
-npm run build      # hasil di folder dist/
+```
+SI-Lowongan-Pekerjaan_3_E/
+├─ frontend/          ← React 18 + Vite + Tailwind CSS (UI/UX sesuai Figma)
+│   ├─ src/
+│   │   ├─ api/       (client.js, mockApi.js, realApi.js)
+│   │   ├─ components/ (Navbar, Footer, JobFields, ProfileForm, ProtectedRoute, ui)
+│   │   ├─ context/   (AuthContext.jsx)
+│   │   └─ pages/     (Home, JobSearch, JobDetail, Login, Register, seeker/*, company/*)
+│   ├─ index.html
+│   ├─ package.json
+│   ├─ vite.config.js
+│   └─ .env.example
+├─ backend/           ← Node.js + Express (REST API 23 Endpoints)
+│   ├─ server.js
+│   ├─ package.json
+│   └─ .env.example
+├─ README.md
+├─ .gitignore
+├─ erd_7tabel .drawio
+└─ usecase.puml
 ```
 
-Aplikasi berjalan dalam **mode mock** (data disimpan di `localStorage`). Akun demo (password `password123`):
-- `pelamar@test.test` (pencari kerja)
-- `hrd@nusantara.test` (perusahaan)
+---
 
-Reset data demo: hapus key `lk_db_v2` di `localStorage` (DevTools → Application).
+## Cara Menjalankan
 
-## Pindah ke backend asli
+### 1. Frontend (UI Web)
 
-1. Salin `.env.example` ke `.env`, isi `VITE_API_URL=http://localhost:8000/api`.
-2. Backend (AB) mengikuti kontrak di bawah. Jika path berbeda, ubah `src/api/realApi.js`.
+```powershell
+cd frontend
+copy .env.example .env        # opsional (bila kosong, otomatis memakai Mode Mock)
+npm install
+npm run dev                    # buka http://localhost:5173
+```
 
-Semua JSON memakai *snake_case* sesuai kolom ERD. Kolom `matched_skills` / `missing_skills` bertipe *text* di DB, namun di API dikirim sebagai **array string**. `jobs.requirements` tetap **text** (dipisah koma / baris baru).
+> **Mode Mock vs Mode Backend Asli:**
+> - Jika `VITE_API_URL` di `frontend/.env` dikosongkan, frontend berjalan mandiri dalam **Mode Mock** (data demo tersimpan di `localStorage`).
+> - Jika diisi `VITE_API_URL=http://localhost:8000/api`, frontend akan otomatis memanggil REST API dari backend Express.
 
-| Fungsi | Method & path | Body / balasan |
+### 2. Backend (REST API Server)
+
+```powershell
+cd backend
+copy .env.example .env
+npm install
+npm run dev                    # berjalan di http://localhost:8000
+```
+
+Variabel konfigurasi `.env` backend:
+| Variabel | Default | Keterangan |
 |---|---|---|
-| register | `POST /auth/register` | seeker: `{role, full_name, phone, email, password}`; company: + `company_name, industry, address` |
-| login | `POST /auth/login` | balas `{ token, user }` |
-| me | `GET /auth/me` | `{ id, role, email, full_name, phone, company: {id, name, ...} \| null }` |
-| profil | `GET/PUT /profile` | seeker: `{full_name, phone, email}`; company: + `company_name, industry, address, description` |
-| CV | `GET/POST /cvs` (multipart `file`), `DELETE /cvs/:id` | item: `{id, file_name, file_type, uploaded_at}`; terbaru dulu; CV terbaru dipakai untuk pencocokan |
-| cari SI Lowongan Kerja | `GET /jobs?q&location&job_type&category&sort_by` | item jobs + `company_name`, `match_score` (null bila belum punya CV); `sort_by=skor` untuk kecocokan tertinggi |
-| detail SI Lowongan Kerja | `GET /jobs/:id` | jobs + `company_name`, `applied`, `match: {score, matched_skills[], missing_skills[], summary} \| null` |
-| CRUD SI Lowongan Kerja | `GET/POST /company/jobs`, `GET/PUT/DELETE /company/jobs/:id` | field: title, description, requirements, location, job_type, category, contact_info, status (`aktif`/`ditutup`); daftar menyertakan `applicant_count` |
-| lamar | `POST /jobs/:id/apply` | `{ cv_id }`; hanya `source=internal` dan `status=aktif` |
-| lamaran saya | `GET /applications/me` | `{id, job_id, cv_id, status, match_score, applied_at, job_title, company_name, cv_file_name}` |
-| pelamar per SI Lowongan Kerja | `GET /company/jobs/:id/applicants` | `{ job, applicants[] }` urut `match_score` menurun; tiap item: `{id, status, match_score, applied_at, cv_file_name, applicant:{full_name,email,phone}, match:{...}}` |
-| ubah status | `PATCH /applications/:id/status` | `{ status }`: `Dikirim`, `Ditinjau`, `Diterima`, `Ditolak` |
-| scan poster | `POST /poster/scan` (multipart `file`) | buat `poster_scans` status `pending`, balas `{ scan_id, fields, confidence }` |
-| konfirmasi scan | `POST /poster/scans/:id/confirm` | body = fields yang sudah diperiksa user; buat `jobs` (`source=poster`), isi `poster_scans.job_id`, status `confirmed`, hitung `match_results` |
-| daftar / hapus scan | `GET /poster/scans`, `DELETE /poster/scans/:id` | item: `{id, status, scanned_at, job, match, match_score}`; hapus scan juga hapus job-nya |
+| `PORT` | `8000` | Port server Express |
+| `JWT_SECRET` | `dev_secret` | Secret key untuk enkripsi token JWT |
+| `CORS_ORIGIN` | `http://localhost:5173` | Domain / origin frontend |
 
-`fields` hasil scan: title, company_name, location, job_type, category, contact_info, description, requirements (text). `confidence`: angka 0..1 per field; di bawah 0.75 ditandai kuning di UI.
+---
 
-Batas file (cek di front end, backend sebaiknya sama): CV (PDF/DOCX) maks 2 MB, poster (JPG/PNG/WEBP) maks 2 MB.
+### Akun Uji Coba Demo
 
-## UI/UX & Desain Figma
+Tersedia akun demo siap pakai (password: `password123`):
+| Role | Email | Password | Hak Akses |
+|---|---|---|---|
+| **Pencari Kerja** | `pelamar@test.test` | `password123` | Cari lowongan, kelola CV, lamar pekerjaan, scan poster AI, cek skor kecocokan |
+| **Perusahaan** | `hrd@nusantara.test` | `password123` | Dashboard metrik HR, pasang lowongan, seleksi pelamar terurut skor, ubah status |
 
-- **Desain UI/UX** dikerjakan secara kolaboratif di **Figma** dengan file: https://www.figma.com/design/mJMwt3PbMuUrjygS9WEo4e/Untitled  
-- Menggunakan design system berbasis **token warna**, **typography**, **spacing**, dan **elevations** yang diekspor ke Tailwind CSS lewat plugin *Figma‑to‑Tailwind*.  
-- **Komponen utama yang ada di proyek:** `src/components/Navbar.jsx`, `src/components/JobFields.jsx` (card lowongan), `src/components/ProfileForm.jsx`, serta komponen UI umum di `src/components/ui.jsx` (modal konfirmasi, alert, pagination, avatar, dll).  
-- Semua elemen UI bersifat **responsive** (mobile‑first). Breakpoint yang dipakai: `sm` (640px), `md` (768px), `lg` (1024px).  
-- Ikon dan ilustrasi disimpan sebagai **SVG** di Figma dan di‑ekspor ke folder `src/assets` untuk dipakai di React.  
-- Proses **handover**: style guide (warna, ukuran font, radius) disinkronkan otomatis ke `tailwind.config.js` sehingga kode tetap konsisten dengan desain.  
-- Setiap perubahan desain di Figma di‑update ke kode dengan plugin **Code Connect** (jika diperlukan) untuk memastikan teks dan properti tetap sinkron.
+*Reset data demo:* Hapus key `lk_db_v2` di `localStorage` (Browser DevTools → Application → Local Storage).
 
-## Hal yang perlu disepakati dengan AB (ERD vs kebutuhan UI)
+---
 
-1. **Nama perusahaan untuk SI Lowongan Kerja eksternal dan poster.** `jobs` hanya punya `company_id`, padahal eksternal/poster tidak punya perusahaan terdaftar. Usul: tambahkan `jobs.company_name`, atau API mengisinya dari `poster_scans.extracted_data`.  
-2. **Nilai `users.role`.** Front end memakai `seeker` dan `company`.  
-3. **CV mana yang dipakai pencocokan.** ERD tidak punya penanda CV aktif, sehingga front end memakai CV dengan `uploaded_at` terbaru.  
-4. **Nama file CV.** `cvs` hanya punya `file_path`; API perlu mengirim `file_name` (bisa diambil dari path).  
-5. **SI Lowongan Kerja poster** tidak muncul di pencarian umum, hanya di halaman Scan Poster milik pemindainya. Ubah bila maunya publik.  
-6. **Kolom yang tidak ada di ERD dan sengaja dihapus dari UI:** gaji, level, batas lamaran, catatan lamaran, riwayat status, keahlian di profil, kota/website perusahaan.  
-7. **Tabel `match_results`** dibaca lewat objek `match` di detail SI Lowongan Kerja dan daftar pelamar. Siapa yang mengisinya (saat upload CV, saat melamar, atau saat dibuka) perlu diputuskan backend.
+## UI/UX & Keselarasan Desain Figma
 
-## Pemetaan ke kartu Trello (bagian DK)
+Antarmuka web dirancang dan diselaraskan **1:1 persis dengan desain High-fi di Figma**:
+- **Tautan Figma:** [SI Lowongan Kerja UI/UX Design](https://www.figma.com/design/mJMwt3PbMuUrjygS9WEo4e/Untitled)
+- **Design Tokens Resmi:**
+  - **Warna Utama (Primary):** Biru `#1976D2` (Material Blue)
+  - **Warna Aksen (Secondary):** Oranye `#FF9800`
+  - **Latar Belakang:** Abu-abu halus `#F5F5F5`
+  - **Warna Teks:** `#212121` (teks utama) & `#616161` (teks sekunder)
+  - **Border Radius:** Kontrol `8px` (`rounded-lg`), Kartu `16px` (`rounded-2xl`)
+  - **Tipografi:** Font `Inter` (Google Fonts)
 
-| Kartu | File |
-|---|---|
-| Registrasi dan login (dua role) | `pages/Register.jsx`, `pages/Login.jsx`, `context/AuthContext.jsx`, `components/ProtectedRoute.jsx` |
-| Manajemen profil pencari kerja | `pages/seeker/SeekerProfile.jsx`, `components/ProfileForm.jsx` |
-| Registrasi dan profil perusahaan | `pages/Register.jsx` (tab Perusahaan), `pages/company/CompanyProfile.jsx` |
-| Unggah dan kelola CV (PDF/DOCX) | `pages/seeker/CvManager.jsx` |
-| Pemasangan dan pengelolaan SI Lowongan Kerja (CRUD) | `pages/company/CompanyJobs.jsx`, `CompanyJobForm.jsx`, `components/JobFields.jsx` |
-| Pencarian dan filter SI Lowongan Kerja | `pages/JobSearch.jsx`, `pages/JobDetail.jsx` |
-| Pengajuan lamaran | `pages/JobDetail.jsx` |
-| Pelacakan status lamaran | `pages/seeker/Applications.jsx` |
-| Pengelolaan lamaran oleh perusahaan | `pages/company/Applicants.jsx` |
-| Pelamar diurutkan berdasarkan skor | `pages/company/Applicants.jsx` |
-| Pemindaian poster SI Lowongan Kerja | `pages/seeker/ScanPoster.jsx` |
-| Konfirmasi pengguna sebelum simpan | `pages/seeker/ScanPoster.jsx` (cek ulang + centang + dialog), `components/ui.jsx` (`ConfirmDialog`) |
+---
 
-Sesuaikan dengan PPT: tidak ada peran admin, bukan aplikasi native, SI Lowongan Kerja eksternal tidak di‑scrape (hanya diarahkan ke situs asal).
+## Pemetaan Halaman ke Kartu Trello (DK)
+
+| Modul / Kartu Trello | Halaman / Komponen | Deskripsi Fitur |
+|---|---|---|
+| **Beranda Utama** | `pages/Home.jsx` | Hero banner AI, search bar besar, tag pencarian populer, 4 kartu kategori pekerjaan berikon, lowongan pilihan, dan banner CTA kelola CV. |
+| **Registrasi & Login (2 Role)** | `pages/Login.jsx`, `pages/Register.jsx` | Split layout branding biru + form autentikasi untuk Pencari Kerja & Perusahaan. |
+| **Pencarian & Filter Lowongan** | `pages/JobSearch.jsx` | Layout 2-kolom: Sidebar filter (tipe, kategori, urutkan) + daftar kartu lowongan dengan avatar perusahaan & skor kecocokan. |
+| **Detail Lowongan & Lamar** | `pages/JobDetail.jsx` | Breadcrumb, info perusahaan, highlight keahlian cocok vs kurang, sidebar lamaran, modal konfirmasi, dan rekomendasi lowongan serupa. |
+| **Profil Pencari Kerja** | `pages/seeker/SeekerProfile.jsx` | Banner profil avatar, 3 tab: *Informasi Pribadi*, *Berkas CV*, dan *Riwayat Lamaran*. |
+| **Kelola Berkas CV** | `pages/seeker/CvManager.jsx` | Upload PDF/DOCX (maks. 2 MB) drag & drop, status CV aktif untuk matching AI, dan hapus berkas. |
+| **Pelacakan Status Lamaran** | `pages/seeker/Applications.jsx` | Riwayat lamaran dengan timeline visual status (*Dikirim → Ditinjau → Keputusan*). |
+| **Pemindaian Poster (AI OCR)** | `pages/seeker/ScanPoster.jsx` | Upload/kamera poster lowongan, ekstraksi AI dengan penanda keyakinan (<75%), dan kalkulasi kecocokan CV. |
+| **Dashboard & Kelola Lowongan HR** | `pages/company/CompanyJobs.jsx` | 4 Stat Cards (*Lowongan Aktif, Total Pelamar, Matching AI, Status Terverifikasi*), tabel lowongan, edit & hapus. |
+| **Form Pasang/Edit Lowongan** | `pages/company/CompanyJobForm.jsx` | Form terstruktur 3 langkah (*Info Posisi, Lokasi & Syarat AI, Status*) + panduan pengisian di samping. |
+| **Seleksi & Peringkat Pelamar** | `pages/company/Applicants.jsx` | Filter status pills (*Semua, Dikirim, Ditinjau, Diterima, Ditolak*), urut skor kecocokan tertinggi, dan aksi ubah status. |
+| **Profil Perusahaan** | `pages/company/CompanyProfile.jsx` | Kelola identitas perusahaan, industri, alamat, dan narasi profil. |
+| **Navigasi & Header** | `components/Navbar.jsx` | Menu bersih tanpa teks profil; klik foto avatar langsung menuju halaman profil akun pengguna. |
+| **Footer Aplikasi** | `components/Footer.jsx` | Identitas hak cipta dan navigasi cepat di bawah halaman. |
+
+---
+
+## Kontrak Endpoint REST API Backend
+
+Semua endpoint berawalan `/api` dan menggunakan format JSON *snake_case* sesuai ERD:
+
+| Fungsi | Method & Path | Body / Respon |
+|---|---|---|
+| Register Akun | `POST /api/auth/register` | Seeker: `{role, full_name, phone, email, password}`; Company: + `{company_name, industry, address}` |
+| Login Akun | `POST /api/auth/login` | Balas `{ token, user }` |
+| Cek Sesi (Me) | `GET /api/auth/me` | `{ id, role, email, full_name, phone, company }` |
+| Profil User | `GET/PUT /api/profile` | Profil pribadi / data perusahaan |
+| Berkas CV | `GET/POST /api/cvs`, `DELETE /api/cvs/:id` | Upload multipart `file`, CV terbaru dipakai untuk kalkulasi AI |
+| Cari Lowongan | `GET /api/jobs?q&location&job_type&category&sort_by` | Daftar lowongan aktif + `match_score` |
+| Detail Lowongan | `GET /api/jobs/:id` | Detail posisi + `match` (matched & missing skills) |
+| CRUD Lowongan HR | `GET/POST /api/company/jobs`, `GET/PUT/DELETE /api/company/jobs/:id` | Khusus role perusahaan; daftar menyertakan `applicant_count` |
+| Lamar Pekerjaan | `POST /api/jobs/:id/apply` | `{ cv_id }` |
+| Lamaran Saya | `GET /api/applications/me` | Daftar lamaran seeker beserta status dan skor |
+| Pelamar per Lowongan | `GET /api/company/jobs/:id/applicants` | Urut skor kecocokan tertinggi menurun |
+| Ubah Status Pelamar | `PATCH /api/applications/:id/status` | `{ status }`: `Dikirim`, `Ditinjau`, `Diterima`, `Ditolak` |
+| Scan Poster AI | `POST /api/poster/scan` | Upload gambar poster (multipart), balas `{ scan_id, fields, confidence }` |
+| Konfirmasi Scan | `POST /api/poster/scans/:id/confirm` | Simpan lowongan dari poster ke daftar user |
+| Daftar / Hapus Scan | `GET /api/poster/scans`, `DELETE /api/poster/scans/:id` | Kelola riwayat poster tersimpan |

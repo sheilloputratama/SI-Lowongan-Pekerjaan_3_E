@@ -16,11 +16,11 @@ function Timeline({ app }) {
         const label = i === 2 && final ? app.status : s;
         const color = !done ? "bg-slate-200 text-slate-500"
           : i === 2 && app.status === "Ditolak" ? "bg-red-500 text-white"
-          : i === 2 ? "bg-green-500 text-white" : "bg-indigo-600 text-white";
+          : i === 2 ? "bg-emerald-600 text-white" : "bg-[#1976d2] text-white";
         return (
           <li key={s} className="flex items-center gap-2">
             <span className={`rounded-full px-3 py-1 ${color}`}>{label}</span>
-            {i < STEPS.length - 1 && <span className={`h-px w-6 ${i < reached ? "bg-indigo-600" : "bg-slate-300"}`} />}
+            {i < STEPS.length - 1 && <span className={`h-px w-6 ${i < reached ? "bg-[#1976d2]" : "bg-slate-300"}`} />}
           </li>
         );
       })}
@@ -35,18 +35,27 @@ export default function Applications() {
   useEffect(() => { api.myApplications().then(setApps).catch((e) => setError(e.message)); }, []);
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <PageTitle title="Lamaran Saya" subtitle="Pantau status setiap lamaran yang sudah kamu kirim." />
+    <div className="mx-auto max-w-4xl space-y-6">
+      {/* BREADCRUMB */}
+      <nav className="flex items-center gap-2 text-xs text-[#616161]">
+        <Link to="/" className="hover:text-[#1976d2] transition flex items-center gap-1">
+          <span>🏠</span> Beranda
+        </Link>
+        <span>/</span>
+        <span className="font-semibold text-[#212121]">Riwayat Lamaran Saya</span>
+      </nav>
+
+      <PageTitle title="Riwayat & Status Lamaran" subtitle="Pantau tahap seleksi dari setiap lamaran yang telah Anda kirimkan ke perusahaan." />
       <Alert>{error}</Alert>
       {!apps && !error ? <Spinner /> : apps && apps.length === 0 ? (
-        <Empty>Belum ada lamaran. <Link to="/" className="text-indigo-600">Cari SI Lowongan Kerja</Link></Empty>
+        <Empty>Belum ada lamaran. <Link to="/jobs" className="text-[#1976d2] font-semibold hover:underline">Cari Lowongan</Link></Empty>
       ) : apps && (
         <div className="space-y-4">
           {apps.map((a) => (
             <Card key={a.id}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <Link to={`/jobs/${a.job_id}`} className="font-semibold hover:text-indigo-600">{a.job_title}</Link>
+                  <Link to={`/jobs/${a.job_id}`} className="font-semibold text-[#212121] hover:text-[#1976d2]">{a.job_title}</Link>
                   <p className="text-sm text-slate-600">{a.company_name}</p>
                   <p className="mt-1 text-xs text-slate-500">Dikirim {fmtDate(a.applied_at)} • CV: {a.cv_file_name}</p>
                 </div>
